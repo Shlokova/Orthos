@@ -1,0 +1,235 @@
+@layer widgets {
+  .room-editor-tabs {
+    flex: 0 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-1);
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-surface);
+  }
+  .room-editor-scroll {
+    padding: 14px;
+  }
+  .room-editor-card,
+  .advanced-room-settings {
+    margin-bottom: var(--space-3);
+    padding: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-card);
+  }
+  .room-editor-card .section-title-row {
+    margin-bottom: 10px;
+  }
+  .feature-tool {
+    width: 100%;
+    min-height: 76px;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-card);
+    cursor: pointer;
+    text-align: left;
+  }
+  .feature-tool:hover {
+    border-color: var(--color-border-interactive);
+    background: var(--color-surface-raised);
+  }
+  .feature-tool-icon {
+    flex: 0 0 auto;
+    width: 46px;
+    height: 46px;
+    border-radius: var(--radius-control);
+    display: grid;
+    place-items: center;
+    color: var(--color-text-on-inverse);
+    background: var(--color-surface-inverse);
+  }
+  .feature-tool > span:last-child {
+    min-width: 0;
+    display: grid;
+    gap: 3px;
+  }
+  .feature-tool strong {
+    font-size: var(--text-md);
+  }
+  .feature-tool small {
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    line-height: var(--line-height-base);
+  }
+
+  .room-chip-list {
+    display: grid;
+    gap: 7px;
+  }
+  .room-chip-list button {
+    min-height: 54px;
+    padding: 10px var(--space-3);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    border: 1px solid transparent;
+    border-radius: var(--radius-compact);
+    color: var(--color-text-primary);
+    background: var(--color-surface-card);
+    cursor: pointer;
+    text-align: left;
+    transition:
+      border-color var(--motion-fast) var(--ease-standard),
+      background var(--motion-fast) var(--ease-standard);
+  }
+  .room-chip-list button span,
+  .room-chip-list button strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .room-chip-list button small {
+    flex: 0 0 auto;
+    color: var(--color-text-muted);
+  }
+  .room-chip-list button:hover {
+    border-color: var(--color-border-interactive);
+    background: var(--color-surface-raised);
+  }
+  .room-chip-list button.is-active {
+    border-color: var(--state-selected-border);
+    background: var(--state-selected-bg);
+  }
+  .room-name-field {
+    margin-top: 0;
+  }
+  .room-dimension-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-2);
+  }
+  .room-dimension-grid.two-columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .room-dimension-grid .ui-field {
+    margin-top: 0;
+  }
+  .room-preset-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 7px;
+    margin-top: var(--space-4);
+  }
+  .room-preset-label {
+    margin-right: var(--space-1);
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+  }
+  .advanced-room-settings {
+    padding: 0;
+    overflow: hidden;
+  }
+  .advanced-room-settings summary {
+    min-height: 44px;
+    padding: 0 14px;
+    border: 0;
+    display: flex;
+    align-items: center;
+    color: var(--color-text-muted);
+    background: var(--color-surface-card);
+    cursor: pointer;
+    font-size: var(--text-xs);
+    font-weight: var(--weight-bold);
+    list-style: none;
+  }
+  .advanced-room-settings summary:hover {
+    color: var(--color-text-accent);
+    background: var(--state-hover-bg);
+  }
+  .advanced-room-settings summary::-webkit-details-marker {
+    display: none;
+  }
+  .advanced-room-settings[open] summary {
+    border-bottom: 1px solid var(--color-border);
+  }
+  .advanced-room-settings > :not(summary) {
+    margin: 14px;
+  }
+  .full-width {
+    width: calc(100% - 28px);
+  }
+
+  .tool-card-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: var(--space-3);
+  }
+  .tool-card-grid > button {
+    min-width: 0;
+    min-height: 88px;
+    padding: 13px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 7px;
+    background: var(--color-surface-card);
+    cursor: pointer;
+  }
+  .tool-card-grid > button:hover {
+    border-color: var(--color-border-interactive);
+    background: var(--color-surface-raised);
+  }
+  .tool-card-grid.compact > button {
+    min-height: 78px;
+  }
+  .room-shape {
+    position: relative;
+    width: 40px;
+    height: 30px;
+    border: 3px solid var(--color-surface-inverse);
+    border-radius: var(--radius-micro);
+  }
+  .room-shape.rectangle {
+    background: var(--state-subtle-bg);
+  }
+  .room-shape.l-shape {
+    border: 0;
+    background:
+      linear-gradient(90deg, var(--color-surface-inverse) 0 38%, transparent 38%),
+      linear-gradient(var(--color-surface-inverse) 0 36%, transparent 36%);
+  }
+  .room-shape.l-shape::after {
+    content: "";
+    position: absolute;
+    inset: 4px;
+    background: var(--color-bg-workspace);
+    clip-path: polygon(0 0, 100% 0, 100% 38%, 38% 38%, 38% 100%, 0 100%);
+  }
+  .plan-create-card {
+    background: var(--color-accent-bg-subtle);
+  }
+
+  .feature-tool:focus-visible,
+  .tool-card-grid > button:focus-visible {
+    box-shadow: var(--shadow-ring-accent);
+  }
+
+  @media (max-width: 768px) {
+    .room-dimension-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 480px) {
+    .room-dimension-grid,
+    .room-dimension-grid.two-columns {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+}

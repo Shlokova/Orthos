@@ -1,0 +1,8 @@
+@layer reset, tokens, primitives, widgets, app;
+
+@import "@fontsource-variable/inter";
+@import "@shared/config/theme/index.css";
+@import "./reset.css";
+@import "./layout.css";
+@import "./error-boundary.css";
+@import "./a11y.css";

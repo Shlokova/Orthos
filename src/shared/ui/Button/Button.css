@@ -1,0 +1,74 @@
+@layer primitives {
+  .ui-button {
+    min-height: 38px;
+    padding: 0 11px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: inherit;
+    background: var(--color-surface-card);
+    cursor: pointer;
+    font-size: var(--text-xs);
+    font-weight: var(--weight-bold);
+  }
+  .ui-button:hover:not(:disabled) {
+    border-color: var(--color-border-strong);
+    background: var(--color-surface-muted);
+  }
+  .ui-button:disabled {
+    opacity: var(--state-disabled-opacity);
+    cursor: default;
+  }
+
+  .ui-button--primary {
+    color: var(--color-text-on-inverse);
+    border-color: var(--color-surface-inverse);
+    background: var(--color-surface-inverse);
+  }
+  .ui-button--primary:hover:not(:disabled) {
+    color: var(--color-text-on-inverse);
+    border-color: var(--color-surface-inverse-hover);
+    background: var(--color-surface-inverse-hover);
+  }
+
+  .ui-button--danger {
+    color: var(--color-danger);
+    border-color: var(--color-danger-border);
+    background: var(--color-danger-bg);
+  }
+  .ui-button--danger:hover:not(:disabled) {
+    color: var(--color-text-on-danger);
+    border-color: var(--color-danger);
+    background: var(--color-danger);
+  }
+
+  .ui-button--list {
+    min-width: 0;
+    min-height: 44px;
+    padding: 8px var(--space-3);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    font-weight: var(--weight-bold);
+    text-align: left;
+  }
+  .ui-button--list > span,
+  .ui-button--list > small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ui-button--list > small {
+    flex: 0 0 auto;
+    color: var(--color-text-muted);
+    font-weight: 400;
+  }
+  .ui-button--list:hover:not(:disabled) {
+    border-color: var(--color-border-interactive);
+    background: var(--color-surface-raised);
+  }
+  .ui-button--list.is-active {
+    border-color: var(--color-accent-border-selected);
+    background: var(--color-accent-soft);
+  }
+}

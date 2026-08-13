@@ -1,0 +1,70 @@
+@layer reset {
+  * {
+    box-sizing: border-box;
+  }
+  html,
+  body,
+  #root {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+  }
+  body {
+    color: var(--color-text-primary);
+    background: var(--color-bg-workspace);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  button,
+  input,
+  select {
+    font: inherit;
+  }
+  button {
+    color: inherit;
+  }
+  button,
+  [role="button"] {
+    -webkit-tap-highlight-color: transparent;
+  }
+  button,
+  input,
+  select {
+    transition:
+      color var(--motion-fast) ease,
+      background-color var(--motion-fast) ease,
+      border-color var(--motion-fast) ease,
+      box-shadow var(--motion-base) var(--ease-out),
+      transform var(--motion-base) var(--ease-out),
+      opacity var(--motion-fast) var(--ease-standard);
+  }
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible {
+    outline: 3px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+  button:active:not(:disabled) {
+    transform: translateY(1px) scale(0.985);
+  }
+  button:disabled {
+    cursor: not-allowed;
+    opacity: var(--state-disabled-opacity);
+  }
+  ::selection {
+    color: var(--color-text-primary);
+    background: var(--color-accent-soft);
+  }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+}

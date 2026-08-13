@@ -1,0 +1,30 @@
+@layer tokens {
+  :root {
+    --palette-white: 255 255 255;
+    --palette-forest-950: 6 26 18;
+    --palette-forest-900: 7 31 22;
+    --palette-forest-800: 16 39 27;
+    --palette-forest-700: 23 60 42;
+    --palette-forest-600: 41 75 54;
+    --palette-cream-50: 255 250 242;
+    --palette-cream-100: 255 250 240;
+    --palette-cream-150: 255 249 239;
+    --palette-cream-200: 255 247 236;
+    --palette-cream-300: 248 241 230;
+    --palette-cream-400: 245 239 227;
+    --palette-cream-500: 242 231 214;
+    --palette-terracotta-200: 255 233 224;
+    --palette-terracotta-300: 237 187 167;
+    --palette-terracotta-400: 233 131 93;
+    --palette-terracotta-500: 207 105 75;
+    --palette-terracotta-650: 191 85 57;
+    --palette-terracotta-700: 170 79 55;
+    --palette-sand-400: 229 209 182;
+    --palette-olive-500: 125 137 96;
+    --palette-olive-600: 97 107 69;
+    --palette-green-gray-600: 82 97 89;
+    --palette-brown-500: 118 95 73;
+    --palette-sage-300: 220 230 173;
+    --palette-sage-400: 203 213 167;
+  }
+}

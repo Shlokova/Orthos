@@ -1,0 +1,17 @@
+@layer app {
+  .error-boundary {
+    min-height: 100%;
+    padding: var(--space-6);
+    display: grid;
+    place-items: center;
+    background: var(--color-bg-app);
+  }
+  .error-boundary-card {
+    max-width: 520px;
+    padding: 28px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-panel);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-panel);
+  }
+}

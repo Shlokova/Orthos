@@ -1,0 +1,28 @@
+@layer widgets {
+  .toolbar-group.wall-mode-control {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .wall-mode-control button {
+    min-width: 0;
+    height: 39px;
+    padding: 0;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    display: grid;
+    place-items: center;
+    color: var(--color-text-muted);
+    background: var(--color-surface-card);
+    cursor: pointer;
+  }
+  .wall-mode-control button:hover {
+    color: var(--color-text-accent);
+    background: var(--color-surface-muted);
+  }
+  .wall-mode-control button.is-active {
+    color: var(--color-text-on-inverse);
+    border-color: var(--color-surface-inverse);
+    background: var(--color-surface-inverse);
+  }
+}

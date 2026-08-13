@@ -1,0 +1,21 @@
+@layer primitives {
+  .ui-note {
+    margin-top: var(--space-3);
+    padding: var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-compact);
+    background: var(--color-bg-workspace);
+    font-size: var(--text-xs);
+    line-height: var(--line-height-base);
+  }
+  .ui-note--danger {
+    color: var(--color-danger);
+    border-color: var(--color-danger-border);
+    background: var(--color-danger-bg);
+  }
+  .ui-note--success {
+    color: var(--color-success);
+    border-color: var(--color-success-border);
+    background: var(--color-success-bg);
+  }
+}

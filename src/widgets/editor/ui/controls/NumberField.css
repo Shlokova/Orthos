@@ -1,0 +1,19 @@
+@layer widgets {
+  .number-field {
+    position: relative;
+    min-width: 0;
+    display: grid;
+  }
+  .number-field.has-unit input {
+    padding-right: 34px;
+  }
+  .number-field-unit {
+    position: absolute;
+    top: 50%;
+    right: var(--space-3);
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    pointer-events: none;
+    transform: translateY(-50%);
+  }
+}

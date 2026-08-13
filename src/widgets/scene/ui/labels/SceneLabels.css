@@ -1,0 +1,76 @@
+@layer widgets {
+  .room-label,
+  .object-label {
+    padding: 5px var(--space-2);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xs);
+    color: var(--color-text-accent);
+    background: var(--color-surface-label);
+    box-shadow: var(--shadow-label);
+    font-size: var(--text-compact);
+    white-space: nowrap;
+  }
+  .room-label.is-active {
+    border-color: var(--color-accent);
+  }
+  .object-label {
+    border-color: var(--color-border-strong);
+  }
+  .plan-object-label {
+    max-width: 110px;
+    padding: 3px 6px;
+    overflow: hidden;
+    border: 1px solid var(--color-border-chrome);
+    border-radius: var(--radius-pill);
+    color: var(--color-text-primary);
+    background: var(--color-surface-label-soft);
+    box-shadow: var(--shadow-label-soft);
+    font-size: var(--text-2xs);
+    line-height: var(--line-height-tight);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .plan-object-label.is-selected {
+    color: var(--color-text-on-inverse);
+    border-color: var(--color-surface-inverse);
+    background: var(--color-surface-inverse);
+  }
+  .plan-object-label.is-invalid {
+    color: var(--color-text-on-danger);
+    border-color: var(--color-danger);
+    background: var(--color-danger);
+  }
+  .plan-room-label {
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-pill);
+    color: var(--color-text-muted);
+    font-size: var(--text-2xs);
+  }
+  .plan-room-label.is-active {
+    color: var(--color-text-accent);
+    border-color: var(--state-selected-border);
+    background: var(--color-surface-label);
+  }
+
+  .drawing-measure {
+    display: inline-block;
+    padding: 3px 6px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xs);
+    color: var(--color-text-accent);
+    background: var(--color-surface-label-warm);
+    box-shadow: var(--shadow-label-soft);
+    font-family: var(--font-sans);
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-strong);
+    line-height: var(--line-height-none);
+    white-space: nowrap;
+  }
+
+  @media (max-width: 480px) {
+    .plan-object-label {
+      max-width: 82px;
+      font-size: var(--text-2xs);
+    }
+  }
+}

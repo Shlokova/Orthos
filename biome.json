@@ -1,0 +1,267 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "files": {
+    "includes": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.css", "scripts/**/*.mjs", "*.ts", "*.json"]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 120,
+    "lineEnding": "lf"
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "jsxQuoteStyle": "double",
+      "semicolons": "asNeeded",
+      "trailingCommas": "all",
+      "arrowParentheses": "always"
+    }
+  },
+  "linter": {
+    "enabled": true,
+    "domains": {
+      "react": "recommended"
+    },
+    "rules": {
+      "preset": "recommended",
+      "correctness": {
+        "useExhaustiveDependencies": "error",
+        "useHookAtTopLevel": "error",
+        "noUnusedImports": "error",
+        "noUnusedVariables": "error"
+      },
+      "suspicious": {
+        "noExplicitAny": "error",
+        "noConsole": {
+          "level": "warn",
+          "options": {
+            "allow": ["warn", "error"]
+          }
+        },
+        "noArrayIndexKey": "off"
+      },
+      "complexity": {
+        "noUselessFragments": "error",
+        "noImportantStyles": "off"
+      }
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["scripts/**"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noConsole": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/widgets/scene/ui/**", "src/widgets/scene/lib/interactions/**"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "noStaticElementInteractions": "off",
+            "useKeyWithClickEvents": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/app/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@widgets/*/**", "@features/*/**", "@entities/*/**"],
+                    "message": "FSD: app \u043e\u0431\u0440\u0430\u0449\u0430\u0435\u0442\u0441\u044f \u043a \u0441\u043b\u0430\u0439\u0441\u0430\u043c \u0442\u043e\u043b\u044c\u043a\u043e \u0447\u0435\u0440\u0435\u0437 \u0438\u0445 \u043f\u0443\u0431\u043b\u0438\u0447\u043d\u044b\u0439 API (index.ts)."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/shared/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@app/*", "@pages/*", "@widgets/*", "@features/*", "@entities/*"],
+                    "message": "FSD: shared \u2014 \u0441\u0430\u043c\u044b\u0439 \u043d\u0438\u0436\u043d\u0438\u0439 \u0441\u043b\u043e\u0439 \u0438 \u043d\u0435 \u043c\u043e\u0436\u0435\u0442 \u0437\u0430\u0432\u0438\u0441\u0435\u0442\u044c \u043d\u0438 \u043e\u0442 \u043e\u0434\u043d\u043e\u0433\u043e \u0441\u043b\u043e\u044f \u0432\u044b\u0448\u0435."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/entities/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@app/*", "@pages/*", "@widgets/*", "@features/*"],
+                    "message": "FSD: entities \u043c\u043e\u0436\u0435\u0442 \u0437\u0430\u0432\u0438\u0441\u0435\u0442\u044c \u0442\u043e\u043b\u044c\u043a\u043e \u043e\u0442 shared."
+                  },
+                  {
+                    "group": [
+                      "three",
+                      "three/*",
+                      "@react-three/*",
+                      "react",
+                      "react-dom",
+                      "@shared/lib/react",
+                      "@shared/lib/react/*"
+                    ],
+                    "message": "entities/scene \u2014 \u0434\u043e\u043c\u0435\u043d\u043d\u0430\u044f \u0433\u0435\u043e\u043c\u0435\u0442\u0440\u0438\u044f: \u043e\u043d\u0430 \u043e\u0431\u044f\u0437\u0430\u043d\u0430 \u043e\u0441\u0442\u0430\u0432\u0430\u0442\u044c\u0441\u044f \u0441\u0432\u043e\u0431\u043e\u0434\u043d\u043e\u0439 \u043e\u0442 React, DOM \u0438 Three.js."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/features/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@app/*", "@pages/*", "@widgets/*"],
+                    "message": "FSD: features \u043c\u043e\u0436\u0435\u0442 \u0437\u0430\u0432\u0438\u0441\u0435\u0442\u044c \u0442\u043e\u043b\u044c\u043a\u043e \u043e\u0442 entities \u0438 shared."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/features/editor/model/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@app/*", "@pages/*", "@widgets/*"],
+                    "message": "FSD: features \u043c\u043e\u0436\u0435\u0442 \u0437\u0430\u0432\u0438\u0441\u0435\u0442\u044c \u0442\u043e\u043b\u044c\u043a\u043e \u043e\u0442 entities \u0438 shared."
+                  },
+                  {
+                    "group": [
+                      "react",
+                      "react-dom",
+                      "three",
+                      "@react-three/*",
+                      "@features/editor/api/*",
+                      "../api/*",
+                      "../../api/*",
+                      "../../../api/*"
+                    ],
+                    "message": "Editor model \u2014 \u044d\u0442\u043e runtime \u0431\u0435\u0437 \u0444\u0440\u0435\u0439\u043c\u0432\u043e\u0440\u043a\u0430: React \u0438 \u0431\u0440\u0430\u0443\u0437\u0435\u0440\u043d\u044b\u0435 \u0430\u0434\u0430\u043f\u0442\u0435\u0440\u044b \u043f\u043e\u0434\u043a\u043b\u044e\u0447\u0430\u044e\u0442\u0441\u044f \u0442\u043e\u043b\u044c\u043a\u043e \u0432 ui/ \u0438 api/."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/widgets/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@app/*", "@pages/*"],
+                    "message": "FSD: widgets \u043d\u0435 \u043c\u043e\u0436\u0435\u0442 \u0437\u0430\u0432\u0438\u0441\u0435\u0442\u044c \u043e\u0442 pages \u0438 app."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/pages/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@app/*"],
+                    "message": "FSD: pages \u043d\u0435 \u043c\u043e\u0436\u0435\u0442 \u0437\u0430\u0432\u0438\u0441\u0435\u0442\u044c \u043e\u0442 app."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/widgets/*/lib/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["../ui/*", "../../ui/*", "../../../ui/*"],
+                    "message": "widgets/*/lib \u2014 \u0447\u0438\u0441\u0442\u0430\u044f \u0433\u0435\u043e\u043c\u0435\u0442\u0440\u0438\u044f \u0438 \u043a\u043e\u043d\u0441\u0442\u0430\u043d\u0442\u044b: \u043e\u043d\u0430 \u043d\u0435 \u043c\u043e\u0436\u0435\u0442 \u0437\u0430\u0432\u0438\u0441\u0435\u0442\u044c \u043e\u0442 ui/."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  }
+}

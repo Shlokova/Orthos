@@ -1,0 +1,69 @@
+@layer primitives {
+  .ui-dialog-layer {
+    position: fixed;
+    z-index: var(--z-dialog);
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: var(--space-5);
+  }
+  .ui-dialog-backdrop {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: var(--color-surface-backdrop);
+    backdrop-filter: blur(2px);
+    cursor: default;
+  }
+  .ui-dialog {
+    position: relative;
+    width: min(440px, 100%);
+    padding: var(--space-6);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-panel);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-panel);
+  }
+  .ui-dialog:focus {
+    outline: none;
+  }
+  .ui-dialog-copy {
+    display: grid;
+    gap: var(--space-2);
+  }
+  .ui-dialog h2 {
+    margin: 0;
+    color: var(--color-text-primary);
+    font-family: var(--font-display);
+    letter-spacing: -0.03em;
+    font-size: var(--text-title);
+  }
+  .ui-dialog p {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: var(--text-base);
+    line-height: var(--line-height-relaxed);
+  }
+  .ui-dialog-actions {
+    margin-top: var(--space-5);
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-2);
+  }
+  .ui-dialog-actions button {
+    min-height: var(--control-height);
+    padding: 0 var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-control);
+    background: var(--color-surface-raised);
+    cursor: pointer;
+    font-weight: var(--weight-bold);
+  }
+  .ui-dialog-actions button:hover {
+    background: var(--color-surface-muted);
+  }
+}

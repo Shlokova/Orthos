@@ -1,0 +1,72 @@
+@layer tokens {
+  :root {
+    color-scheme: light;
+
+    --color-bg-app: rgb(var(--palette-cream-400));
+    --color-bg-workspace: rgb(var(--palette-cream-300));
+
+    --color-surface: rgb(var(--palette-cream-100));
+    --color-surface-raised: rgb(var(--palette-cream-50));
+    --color-surface-input: rgb(var(--palette-cream-50));
+    --color-surface-muted: rgb(var(--palette-cream-500));
+    --color-surface-card: rgb(var(--palette-white) / 0.55);
+    --color-surface-segmented: rgb(var(--palette-white) / 0.62);
+    --color-surface-chrome: rgb(var(--palette-cream-100) / 0.97);
+    --color-surface-label: rgb(var(--palette-cream-100) / 0.94);
+    --color-surface-label-soft: rgb(var(--palette-cream-100) / 0.9);
+    --color-surface-label-warm: rgb(var(--palette-cream-200) / 0.94);
+    --color-surface-inverse: rgb(var(--palette-forest-700));
+    --color-surface-inverse-hover: rgb(var(--palette-forest-600));
+    --color-surface-hud: rgb(var(--palette-forest-900) / 0.96);
+    --color-surface-scrim: rgb(var(--palette-forest-950) / 0.28);
+    --color-surface-backdrop: rgb(var(--palette-forest-950) / 0.36);
+    --color-shadow-soft: rgb(var(--palette-forest-950) / 0.08);
+    --color-preview-gradient: linear-gradient(145deg, rgb(var(--palette-cream-150)), rgb(var(--palette-sand-400)));
+
+    --color-text-primary: rgb(var(--palette-forest-900));
+    --color-text-accent: rgb(var(--palette-forest-700));
+    --color-text-muted: rgb(var(--palette-green-gray-600));
+    --color-text-on-inverse: rgb(var(--palette-cream-100));
+    --color-text-on-accent: rgb(var(--palette-cream-50));
+    --color-text-on-dark-muted: rgb(var(--palette-terracotta-300));
+    --color-text-on-danger: rgb(var(--palette-white));
+    --color-scene-ink: rgb(var(--palette-forest-900));
+
+    --color-border: rgb(var(--palette-forest-800) / 0.14);
+    --color-border-strong: rgb(var(--palette-forest-800) / 0.26);
+    --color-border-chrome: rgb(var(--palette-forest-800) / 0.11);
+    --color-border-interactive: rgb(var(--palette-forest-700) / 0.32);
+    --color-border-focus: rgb(var(--palette-forest-700) / 0.52);
+    --color-border-on-dark: rgb(var(--palette-white) / 0.16);
+    --color-border-on-dark-hover: rgb(var(--palette-white) / 0.34);
+
+    --state-hover-bg: rgb(var(--palette-forest-700) / 0.08);
+    --state-hover-on-dark-bg: rgb(var(--palette-white) / 0.08);
+    --state-selected-bg: rgb(var(--palette-forest-700) / 0.1);
+    --state-selected-border: rgb(var(--palette-forest-700) / 0.3);
+    --state-subtle-bg: rgb(var(--palette-forest-700) / 0.06);
+    --state-disabled-opacity: 0.46;
+
+    --color-accent: rgb(var(--palette-terracotta-400));
+    --color-accent-strong: rgb(var(--palette-terracotta-500));
+    --color-accent-soft: rgb(var(--palette-terracotta-200));
+    --color-accent-bg: rgb(var(--palette-terracotta-500) / 0.09);
+    --color-accent-bg-subtle: rgb(var(--palette-terracotta-500) / 0.04);
+    --color-accent-border: rgb(var(--palette-terracotta-500) / 0.34);
+    --color-accent-border-selected: rgb(var(--palette-terracotta-500) / 0.45);
+
+    --color-danger: rgb(var(--palette-terracotta-700));
+    --color-danger-bg: rgb(var(--palette-terracotta-700) / 0.1);
+    --color-danger-border: rgb(var(--palette-terracotta-700) / 0.3);
+    --color-success: rgb(var(--palette-olive-600));
+    --color-success-bg: rgb(var(--palette-sage-300) / 0.45);
+    --color-success-border: rgb(var(--palette-sage-400) / 0.9);
+
+    --color-scrollbar-thumb: rgb(var(--palette-forest-700) / 0.26);
+    --color-focus-ring: rgb(var(--palette-forest-700) / 0.34);
+  }
+
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+  }
+}

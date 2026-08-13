@@ -1,0 +1,122 @@
+@layer widgets {
+  .scene-bottom-toolbar {
+    position: absolute;
+    z-index: var(--z-scene-chrome);
+    right: 12px;
+    bottom: 18px;
+    left: 12px;
+    width: fit-content;
+    max-width: calc(100% - 24px);
+    margin-inline: auto;
+    padding: 7px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    border: 1px solid var(--color-border-chrome);
+    border-radius: var(--radius-xl);
+    background: var(--color-surface-chrome);
+    box-shadow: var(--shadow-control);
+  }
+  .scene-bottom-toolbar::-webkit-scrollbar {
+    display: none;
+  }
+  .scene-bottom-toolbar button {
+    flex: none;
+    position: relative;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-control);
+    display: grid;
+    place-items: center;
+    color: var(--color-text-muted);
+    background: transparent;
+    cursor: pointer;
+  }
+  .scene-bottom-toolbar button:hover:not(:disabled) {
+    color: var(--color-text-accent);
+    background: var(--state-hover-bg);
+  }
+  .scene-bottom-toolbar button.is-active {
+    color: var(--color-text-on-inverse);
+    background: var(--color-surface-inverse);
+  }
+  .scene-bottom-toolbar button:disabled {
+    opacity: var(--state-disabled-opacity);
+  }
+  .scene-bottom-toolbar svg {
+    width: 18px;
+    height: 18px;
+  }
+  .scene-toolbar-badge {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border-radius: var(--radius-pill);
+    display: grid;
+    place-items: center;
+    color: var(--color-text-on-danger);
+    background: var(--color-danger);
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-heavy);
+  }
+  .scene-toolbar-separator {
+    flex: none;
+    width: 1px;
+    height: 22px;
+    margin: 0 2px;
+    background: var(--color-border-chrome);
+  }
+  .scene-zoom-control {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+  .scene-zoom-control output {
+    min-width: 46px;
+    color: var(--color-text-muted);
+    font-size: var(--text-compact);
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+  }
+
+  @media (max-width: 768px) {
+    .scene-bottom-toolbar {
+      right: 8px;
+      bottom: calc(78px + env(safe-area-inset-bottom));
+      left: 8px;
+      max-width: calc(100% - 16px);
+    }
+    .scene-bottom-toolbar button {
+      width: 38px;
+      height: 38px;
+    }
+
+    .app-shell[data-overlay-open="true"] .scene-bottom-toolbar {
+      opacity: 0;
+      pointer-events: none;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .scene-bottom-toolbar {
+      gap: 2px;
+      padding: 7px;
+    }
+    .scene-bottom-toolbar button {
+      width: 35px;
+      height: 35px;
+      border-radius: var(--radius-compact);
+    }
+    .scene-toolbar-separator {
+      margin-inline: 1px;
+    }
+  }
+}

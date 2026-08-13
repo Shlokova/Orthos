@@ -1,0 +1,21 @@
+@layer primitives {
+  .ui-tab {
+    min-height: 36px;
+    padding: 0 var(--space-2);
+    border: 0;
+    border-radius: var(--radius-sm);
+    color: var(--color-text-muted);
+    background: transparent;
+    cursor: pointer;
+    font-size: var(--text-compact);
+    font-weight: var(--weight-bold);
+  }
+  .ui-tab:hover {
+    color: var(--color-text-accent);
+    background: var(--state-hover-bg);
+  }
+  .ui-tab.is-active {
+    color: var(--color-text-on-inverse);
+    background: var(--color-surface-inverse);
+  }
+}

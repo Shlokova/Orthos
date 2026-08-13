@@ -1,0 +1,6 @@
+export { createEditorRuntime } from './api/createEditorRuntime'
+export type { EditorActions } from './model/actions'
+export type { RoomDrawingDraft } from './model/EditorState'
+export type { ViewMode, WallDisplayMode } from './model/editorTypes'
+export { isRoomDrawingClosable } from './model/room-drawing/RoomDrawingSession'
+export { EditorProvider, useEditorActions, useEditorSelector } from './ui/EditorContext'
