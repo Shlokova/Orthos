@@ -17,26 +17,6 @@ export function EditorToolbar() {
 
   return (
     <div className="editor-toolbar">
-      <div className="history-cluster" role="toolbar" aria-label="History">
-        <button
-          type="button"
-          disabled={!canUndo || Boolean(roomDrawing)}
-          onClick={undo}
-          aria-label="Undo"
-          title={roomDrawing ? 'Finish or cancel the room first' : 'Undo'}
-        >
-          <UndoIcon />
-        </button>
-        <button
-          type="button"
-          disabled={!canRedo || Boolean(roomDrawing)}
-          onClick={redo}
-          aria-label="Redo"
-          title={roomDrawing ? 'Finish or cancel the room first' : 'Redo'}
-        >
-          <RedoIcon />
-        </button>
-      </div>
       <div className="view-switch" role="toolbar" aria-label="View mode">
         <button
           type="button"
@@ -59,6 +39,26 @@ export function EditorToolbar() {
         >
           <PerspectiveIcon />
           <span>3D view</span>
+        </button>
+      </div>
+      <div className="history-cluster" role="toolbar" aria-label="History">
+        <button
+          type="button"
+          disabled={!canUndo || Boolean(roomDrawing)}
+          onClick={undo}
+          aria-label="Undo"
+          title={roomDrawing ? 'Finish or cancel the room first' : 'Undo'}
+        >
+          <UndoIcon />
+        </button>
+        <button
+          type="button"
+          disabled={!canRedo || Boolean(roomDrawing)}
+          onClick={redo}
+          aria-label="Redo"
+          title={roomDrawing ? 'Finish or cancel the room first' : 'Redo'}
+        >
+          <RedoIcon />
         </button>
       </div>
     </div>

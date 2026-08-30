@@ -9,8 +9,8 @@
     --color-surface-raised: rgb(var(--palette-cream-50));
     --color-surface-input: rgb(var(--palette-cream-50));
     --color-surface-muted: rgb(var(--palette-cream-500));
-    --color-surface-card: rgb(var(--palette-white) / 0.55);
-    --color-surface-segmented: rgb(var(--palette-white) / 0.62);
+    --color-surface-card: rgb(var(--palette-paper-300));
+    --color-surface-segmented: rgb(var(--palette-paper-300) / 1);
     --color-surface-chrome: rgb(var(--palette-cream-100) / 0.97);
     --color-surface-label: rgb(var(--palette-cream-100) / 0.94);
     --color-surface-label-soft: rgb(var(--palette-cream-100) / 0.9);
@@ -21,7 +21,7 @@
     --color-surface-scrim: rgb(var(--palette-forest-950) / 0.28);
     --color-surface-backdrop: rgb(var(--palette-forest-950) / 0.36);
     --color-shadow-soft: rgb(var(--palette-forest-950) / 0.08);
-    --color-preview-gradient: linear-gradient(145deg, rgb(var(--palette-cream-150)), rgb(var(--palette-sand-400)));
+    --color-preview: rgb(var(--palette-cream-100));
 
     --color-text-primary: rgb(var(--palette-forest-900));
     --color-text-accent: rgb(var(--palette-forest-700));
@@ -39,6 +39,8 @@
     --color-border-focus: rgb(var(--palette-forest-700) / 0.52);
     --color-border-on-dark: rgb(var(--palette-white) / 0.16);
     --color-border-on-dark-hover: rgb(var(--palette-white) / 0.34);
+
+    --color-shadow: rgb(var(--palette-green-gray-600) / 0.34);
 
     --state-hover-bg: rgb(var(--palette-forest-700) / 0.08);
     --state-hover-on-dark-bg: rgb(var(--palette-white) / 0.08);

@@ -68,7 +68,7 @@ export function ToolRail({ openPanel, onToggle }: Props) {
           onClick={() => onToggle(id)}
         >
           <Icon />
-          <span>{label}</span>
+          {/*<span>{label}</span>*/}
         </button>
       ))}
     </nav>
