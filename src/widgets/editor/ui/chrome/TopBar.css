@@ -10,16 +10,15 @@
     grid-template-columns: minmax(190px, 1fr) auto minmax(96px, 1fr);
     align-items: center;
     gap: var(--space-5);
-    border-bottom: 1px solid var(--color-border-chrome);
-    background: var(--color-surface-chrome);
-    box-shadow: var(--shadow-topbar);
   }
+
   .brand {
     min-width: 0;
     display: flex;
     align-items: center;
     gap: 11px;
   }
+
   .brand-mark {
     flex: 0 0 auto;
     width: 38px;
@@ -27,11 +26,13 @@
     display: block;
     object-fit: contain;
   }
+
   .brand-copy {
     min-width: 0;
     display: grid;
     gap: 1px;
   }
+
   .brand-copy strong {
     overflow: hidden;
     color: var(--color-text-accent);
@@ -43,11 +44,13 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+
   .brand-copy span {
     color: var(--color-text-muted);
     font-size: var(--text-compact);
     white-space: nowrap;
   }
+
   .topbar-actions {
     min-width: max-content;
     justify-self: end;
@@ -62,6 +65,7 @@
       gap: 10px;
       padding: 0 var(--space-3);
     }
+
     .brand-copy span {
       display: none;
     }
@@ -73,13 +77,16 @@
       gap: 6px;
       padding: 0 var(--space-2);
     }
+
     .brand-copy {
       display: none;
     }
+
     .brand-mark {
       width: 35px;
       height: 35px;
     }
+
     .topbar-actions {
       grid-column: 3;
       gap: 3px;
@@ -91,6 +98,7 @@
       gap: 4px;
       padding-inline: 6px;
     }
+
     .brand-mark {
       width: 34px;
       height: 34px;

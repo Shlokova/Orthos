@@ -1,9 +1,11 @@
 @layer widgets {
   .workspace {
     --rail-column: var(--rail-width);
-    --dock-open: clamp(292px, 34vw, 400px);
+    --dock-open: clamp(300px, 34vw, 360px);
     --dock: 0px;
 
+    margin: var(--space-3);
+    gap: var(--space-3);
     position: relative;
     min-width: 0;
     min-height: 0;
@@ -20,6 +22,7 @@
     min-width: 0;
     min-height: 0;
     overflow: clip;
+    border-radius: var(--radius-panel);
   }
 
   .workspace-dock {

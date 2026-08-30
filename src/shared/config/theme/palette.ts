@@ -25,12 +25,13 @@ export const UI_PALETTE = {
   'brown-500': '#765f49',
   'sage-300': '#dce6ad',
   'sage-400': '#cbd5a7',
+  'paper-300': '#EEE7DB',
 } as const
 
 export const SCENE_PALETTE = {
   ink: '#513525',
   inkSoft: '#73513c',
-  paper: '#f5ecdf',
+  paper: '#EEE7DB',
   cream: '#ead9be',
   creamLight: '#f7ead7',
   olive: '#6c7a46',

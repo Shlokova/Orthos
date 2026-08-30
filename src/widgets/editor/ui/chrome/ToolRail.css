@@ -3,18 +3,20 @@
     position: relative;
     z-index: var(--z-rail);
     width: var(--rail-width);
+    height: fit-content;
     padding: var(--space-2) 7px;
     display: grid;
     align-content: start;
     gap: 4px;
     overflow: visible;
-    border-right: 1px solid var(--color-border);
+    border-radius: var(--radius-panel);
     background: var(--color-surface-chrome);
+    box-shadow: var(--shadow-floating-panel);
   }
   .tool-rail button {
     position: relative;
     width: 100%;
-    min-height: 58px;
+    min-height: 40px;
     margin: 0;
     padding: var(--space-2) 4px;
     overflow: hidden;
@@ -47,8 +49,8 @@
     cursor: default;
   }
   .tool-rail svg {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
   }
   .tool-rail span {
     font-size: var(--text-compact);

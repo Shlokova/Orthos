@@ -4,17 +4,18 @@
     position: absolute;
     z-index: var(--z-panel);
     top: 0;
-    bottom: 0;
+    max-height: 100%;
     left: 0;
     width: var(--dock-width, 100%);
     min-width: 0;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    border-right: 1px solid var(--color-border);
+    border-radius: var(--radius-panel);
     background: var(--color-surface);
     pointer-events: auto;
     animation: panel-enter var(--motion-base) var(--ease-out) both;
+    box-shadow: var(--shadow-floating-panel);
   }
 
   .floating-panel[data-state="exiting"] {
@@ -32,7 +33,7 @@
     flex: 0 0 auto;
     min-width: 0;
     min-height: var(--topbar-height);
-    padding: 0 var(--space-4) 0 var(--space-5);
+    padding: 0 var(--space-4) 0 var(--space-4);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -44,7 +45,7 @@
   .floating-panel-header > div {
     min-width: 0;
     display: grid;
-    gap: 1px;
+    gap: var(--space-1);
   }
 
   .floating-panel-header span {
@@ -108,6 +109,7 @@
   .panel-scroll {
     flex: 1 1 auto;
   }
+
   .inspector-scroll {
     flex: 1 1 auto;
     padding-bottom: 18px;
@@ -120,12 +122,14 @@
     scrollbar-color: var(--state-selected-border) transparent;
     scrollbar-width: thin;
   }
+
   .panel-scroll::-webkit-scrollbar,
   .inspector-scroll::-webkit-scrollbar,
   .catalog-grid::-webkit-scrollbar,
   .room-editor-scroll::-webkit-scrollbar {
     width: 8px;
   }
+
   .panel-scroll::-webkit-scrollbar-thumb,
   .inspector-scroll::-webkit-scrollbar-thumb,
   .catalog-grid::-webkit-scrollbar-thumb,
@@ -143,11 +147,13 @@
     justify-content: space-between;
     gap: var(--space-3);
   }
+
   .section-title-row h3 {
     margin: 0;
     font-size: var(--text-sm);
     letter-spacing: -0.01em;
   }
+
   .section-title-row > span {
     color: var(--color-text-muted);
     font-size: var(--text-xs);
@@ -214,13 +220,16 @@
       animation-name: sheet-enter;
       box-shadow: var(--shadow-sheet);
     }
+
     .floating-panel[data-state="exiting"] {
       animation-name: sheet-exit;
     }
+
     .floating-panel-header {
       min-height: 60px;
       padding: 0 var(--space-2) 0 var(--space-4);
     }
+
     .panel-close {
       width: 42px;
       height: 42px;
@@ -236,6 +245,7 @@
       left: 5px;
       border-radius: var(--radius-xl);
     }
+
     .floating-panel-header {
       min-height: 56px;
       padding: 0 6px 0 14px;
