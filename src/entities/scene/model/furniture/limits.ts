@@ -2,6 +2,7 @@ export const FURNITURE_LIMITS = {
   width: { min: 0.1, max: 5 },
   depth: { min: 0.03, max: 5 },
   height: { min: 0.02, max: 4 },
+  elevation: { min: 0, max: 3 },
   nameLength: 80,
 } as const
 

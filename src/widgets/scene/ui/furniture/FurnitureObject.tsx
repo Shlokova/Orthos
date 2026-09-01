@@ -1,5 +1,12 @@
-import { type FurnitureItem, getCatalogItem, resolveFurnitureColor } from '@entities/scene'
-import { useEditorSelector, type ViewMode } from '@features/editor'
+import type { FurnitureAnchor, RoomDefinition } from '@entities/scene'
+import {
+  type FurnitureItem,
+  findItemSupport,
+  getCatalogItem,
+  getItemAnchorStrategy,
+  resolveFurnitureColor,
+} from '@entities/scene'
+import { useEditorActions, useEditorSelector, type ViewMode } from '@features/editor'
 import { useViewportInteraction } from '@features/viewport'
 import { Edges, Html } from '@react-three/drei'
 import type { ThreeEvent } from '@react-three/fiber'
@@ -9,14 +16,55 @@ import { memo } from 'react'
 import { planAngleToSceneY } from '../../lib/geometry/sceneCoordinates'
 import { useFurnitureDrag } from '../../lib/interactions/useFurnitureDrag'
 import { useFurnitureRotate } from '../../lib/interactions/useFurnitureRotate'
+import { useVerticalDrag } from '../../lib/interactions/useVerticalDrag'
 import { ProceduralFurniture } from '../furniture/ProceduralFurniture'
+import { HeightHandle } from '../primitives/HeightHandle'
 import { PlanHitArea, VolumeHitArea } from './FurnitureHitArea'
 import { FurnitureRotateHandle } from './FurnitureRotateHandle'
 import { PlanFurnitureSymbol } from './PlanFurnitureSymbol'
 
 interface Props {
   item: FurnitureItem
+  room: RoomDefinition | null
   viewMode: ViewMode
+}
+
+type PlanLayerKey = FurnitureAnchor | 'walkable'
+
+const PLAN_LAYER_Y: Readonly<Record<PlanLayerKey, number>> = {
+  walkable: 0.032,
+  floor: 0.062,
+  surface: 0.072,
+  wall: 0.082,
+  ceiling: 0.092,
+}
+
+const PLAN_RENDER_ORDER: Readonly<Record<PlanLayerKey, number>> = {
+  walkable: 16,
+  floor: 20,
+  surface: 24,
+  wall: 28,
+  ceiling: 32,
+}
+
+function planLayerKey(item: FurnitureItem): PlanLayerKey {
+  const definition = getCatalogItem(item.kind)
+  return definition.walkable === true ? 'walkable' : definition.anchor
+}
+
+function describePlacement(item: FurnitureItem, items: readonly FurnitureItem[]): string {
+  switch (getCatalogItem(item.kind).anchor) {
+    case 'wall':
+      return `Wall · ${item.elevation.toFixed(2)} m`
+    case 'ceiling':
+      return `Ceiling · ${item.elevation.toFixed(2)} m`
+    case 'surface': {
+      const support = findItemSupport(item, items)
+      return support ? `On ${support.name}` : 'Floor'
+    }
+    case 'floor':
+      return 'Floor'
+  }
 }
 
 interface FurnitureVisualProps extends Props {
@@ -24,6 +72,8 @@ interface FurnitureVisualProps extends Props {
   invalid: boolean
   isDragging: boolean
   illustratedColor: string
+  placementLabel: string
+  handleHeightPointerDown: (event: ThreeEvent<PointerEvent>) => void
   handlePointerDown: (event: ThreeEvent<PointerEvent>) => void
   handleRotatePointerDown: (event: ThreeEvent<PointerEvent>) => void
 }
@@ -36,9 +86,10 @@ function PlanFurnitureVisual({
   handlePointerDown,
   handleRotatePointerDown,
 }: FurnitureVisualProps) {
-  const walkable = getCatalogItem(item.kind).walkable === true
-  const layerY = walkable ? 0.032 : 0.062
-  const renderOrder = walkable ? 16 : 20
+  const strategy = getItemAnchorStrategy(item.kind)
+  const layerKey = planLayerKey(item)
+  const layerY = PLAN_LAYER_Y[layerKey]
+  const renderOrder = PLAN_RENDER_ORDER[layerKey]
 
   return (
     <group
@@ -53,7 +104,7 @@ function PlanFurnitureVisual({
         baseRenderOrder={renderOrder}
       />
       <PlanHitArea width={item.size.width} depth={item.size.depth} onPointerDown={handlePointerDown} />
-      {selected && (
+      {selected && strategy.rotatable && (
         <FurnitureRotateHandle
           width={item.size.width}
           depth={item.size.depth}
@@ -83,15 +134,18 @@ function PerspectiveFurnitureVisual({
   invalid,
   isDragging,
   illustratedColor,
+  placementLabel,
   handlePointerDown,
   handleRotatePointerDown,
+  handleHeightPointerDown,
 }: FurnitureVisualProps) {
   const definition = getCatalogItem(item.kind)
+  const strategy = getItemAnchorStrategy(item.kind)
   const modelItem = { ...item, color: illustratedColor, height: definition.height }
   const heightScale = item.height / definition.height
 
   return (
-    <group position={[item.position.x, 0, item.position.z]} rotation-y={planAngleToSceneY(item.rotation)}>
+    <group position={[item.position.x, item.elevation, item.position.z]} rotation-y={planAngleToSceneY(item.rotation)}>
       <group scale-y={heightScale}>
         <ProceduralFurniture item={modelItem} />
       </group>
@@ -101,13 +155,16 @@ function PerspectiveFurnitureVisual({
         height={item.height}
         onPointerDown={handlePointerDown}
       />
-      {selected && (
+      {selected && strategy.rotatable && (
         <FurnitureRotateHandle
           width={item.size.width}
           depth={item.size.depth}
           height={item.height + 0.12}
           onPointerDown={handleRotatePointerDown}
         />
+      )}
+      {selected && strategy.editableElevation && (
+        <HeightHandle width={item.size.width} centerY={item.height / 2} onPointerDown={handleHeightPointerDown} />
       )}
       {invalid && (
         <mesh position-y={item.height / 2} renderOrder={7}>
@@ -138,7 +195,7 @@ function PerspectiveFurnitureVisual({
       {selected && !isDragging && (
         <Html center transform={false} position={[0, item.height + 0.25, 0]} style={{ pointerEvents: 'none' }}>
           <div className="object-label">
-            {item.size.width.toFixed(2)} × {item.size.depth.toFixed(2)} m · Floor
+            {item.size.width.toFixed(2)} × {item.size.depth.toFixed(2)} m · {placementLabel}
           </div>
         </Html>
       )}
@@ -146,28 +203,40 @@ function PerspectiveFurnitureVisual({
   )
 }
 
-function FurnitureObjectComponent({ item, viewMode }: Props) {
+function FurnitureObjectComponent({ item, room, viewMode }: Props) {
   const { interactionTool } = useViewportInteraction()
-  const { selected, invalid, selectedDragging } = useEditorSelector((state) => {
+  const { selected, invalid, selectedDragging, placementLabel } = useEditorSelector((state) => {
     const isSelected = state.selectedId === item.id
     return {
       selected: isSelected,
       invalid: state.invalidIds.has(item.id),
       selectedDragging: isSelected && state.isTransacting,
+      placementLabel: isSelected ? describePlacement(item, state.scene.items) : '',
     }
   }, shallowEqual)
   const illustratedColor = resolveFurnitureColor(item)
+  const { updateItem } = useEditorActions()
   const handlePointerDown = useFurnitureDrag({ item, viewMode, interactionTool })
   const handleRotatePointerDown = useFurnitureRotate({ item, viewMode, interactionTool })
+  const handleHeightPointerDown = useVerticalDrag({
+    origin: item.position,
+    value: item.elevation,
+    bounds: { min: 0, max: Math.max(0, (room?.height ?? item.height) - item.height) },
+    interactionTool,
+    onPreview: (elevation) => updateItem(item.id, { elevation }, 'preview'),
+  })
   const visualProps: FurnitureVisualProps = {
     item,
+    room,
     viewMode,
     selected,
     invalid,
     isDragging: selectedDragging,
     illustratedColor,
+    placementLabel,
     handlePointerDown,
     handleRotatePointerDown,
+    handleHeightPointerDown,
   }
 
   return viewMode === 'top' ? <PlanFurnitureVisual {...visualProps} /> : <PerspectiveFurnitureVisual {...visualProps} />

@@ -13,6 +13,7 @@ export function furnitureItemsEqual(first: FurnitureItem, second: FurnitureItem)
     first.size.width === second.size.width &&
     first.size.depth === second.size.depth &&
     first.height === second.height &&
+    first.elevation === second.elevation &&
     first.color === second.color
   )
 }

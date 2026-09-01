@@ -57,7 +57,7 @@ function GridLayer({
 export function PlanGrid({ bounds }: { bounds: Bounds2D }) {
   return (
     <group>
-      <GridLayer bounds={bounds} step={0.25} skipEvery={1} color={SCENE_THEME.palette.gridMinor} opacity={0.18} />
+      <GridLayer bounds={bounds} step={0.25} skipEvery={1} color={SCENE_THEME.palette.gridMinor} opacity={0.15} />
       <GridLayer bounds={bounds} step={1} color={SCENE_THEME.palette.gridMajor} opacity={0.3} />
     </group>
   )

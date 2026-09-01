@@ -1,7 +1,19 @@
-import { createRectangularRoom, DEFAULT_ROOM_HEIGHT, type FurnitureItem, type SceneState } from '@entities/scene'
+import {
+  createRectangularRoom,
+  DEFAULT_ROOM_HEIGHT,
+  type FurnitureItem,
+  mountItemOnWall,
+  type SceneState,
+  settleSurfaceItems,
+} from '@entities/scene'
 import { FURNITURE_SWATCHES } from '@shared/config/theme'
 
 const DEFAULT_ROOM = createRectangularRoom(8, 6, DEFAULT_ROOM_HEIGHT, { x: 0, z: 0 }, 'Living room', 'room-living')
+
+function mountedOnWall(item: FurnitureItem): FurnitureItem {
+  const mount = mountItemOnWall(item, DEFAULT_ROOM, 'any-wall')
+  return mount ? { ...item, position: mount.position, rotation: mount.rotation } : item
+}
 
 const items: FurnitureItem[] = [
   {
@@ -13,6 +25,7 @@ const items: FurnitureItem[] = [
     rotation: 0,
     size: { width: 2.2, depth: 0.9 },
     height: 0.85,
+    elevation: 0,
     color: FURNITURE_SWATCHES.leaf,
   },
   {
@@ -24,6 +37,7 @@ const items: FurnitureItem[] = [
     rotation: 0,
     size: { width: 1.1, depth: 0.62 },
     height: 0.43,
+    elevation: 0,
     color: FURNITURE_SWATCHES.darkWood,
   },
   {
@@ -35,6 +49,7 @@ const items: FurnitureItem[] = [
     rotation: Math.PI / 2,
     size: { width: 1.5, depth: 0.7 },
     height: 0.78,
+    elevation: 0,
     color: FURNITURE_SWATCHES.warmWood,
   },
   {
@@ -46,6 +61,7 @@ const items: FurnitureItem[] = [
     rotation: Math.PI / 8,
     size: { width: 1.4, depth: 1 },
     height: 0.75,
+    elevation: 0,
     color: FURNITURE_SWATCHES.warmWood,
   },
   {
@@ -57,11 +73,60 @@ const items: FurnitureItem[] = [
     rotation: 0,
     size: { width: 2.45, depth: 1.8 },
     height: 0.025,
+    elevation: 0,
     color: FURNITURE_SWATCHES.sand,
+  },
+  mountedOnWall({
+    id: 'shelf-demo',
+    roomId: DEFAULT_ROOM.id,
+    kind: 'shelf',
+    name: 'Wall shelf',
+    position: { x: -4, z: 1 },
+    rotation: 0,
+    size: { width: 0.9, depth: 0.25 },
+    height: 0.06,
+    elevation: 1.2,
+    color: FURNITURE_SWATCHES.warmWood,
+  }),
+  {
+    id: 'photo-frame-demo',
+    roomId: DEFAULT_ROOM.id,
+    kind: 'photo-frame',
+    name: 'Photo frame',
+    position: { x: -3.86, z: 1.15 },
+    rotation: -Math.PI / 2,
+    size: { width: 0.16, depth: 0.06 },
+    height: 0.2,
+    elevation: 0,
+    color: FURNITURE_SWATCHES.darkWood,
+  },
+  {
+    id: 'plant-demo',
+    roomId: DEFAULT_ROOM.id,
+    kind: 'plant',
+    name: 'Potted plant',
+    position: { x: 1.35, z: 1.25 },
+    rotation: 0,
+    size: { width: 0.3, depth: 0.3 },
+    height: 0.6,
+    elevation: 0,
+    color: FURNITURE_SWATCHES.leaf,
+  },
+  {
+    id: 'ceiling-lamp-demo',
+    roomId: DEFAULT_ROOM.id,
+    kind: 'ceiling-lamp',
+    name: 'Ceiling lamp',
+    position: { x: 1.35, z: 1.25 },
+    rotation: 0,
+    size: { width: 0.42, depth: 0.42 },
+    height: 0.55,
+    elevation: DEFAULT_ROOM_HEIGHT - 0.55,
+    color: FURNITURE_SWATCHES.cream,
   },
 ]
 
-export const DEFAULT_SCENE: SceneState = {
+export const DEFAULT_SCENE: SceneState = settleSurfaceItems({
   rooms: [DEFAULT_ROOM],
   items,
   openings: [
@@ -86,4 +151,4 @@ export const DEFAULT_SCENE: SceneState = {
       sillHeight: 0,
     },
   ],
-}
+})

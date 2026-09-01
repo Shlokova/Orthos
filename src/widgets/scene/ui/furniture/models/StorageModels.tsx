@@ -139,14 +139,14 @@ export function BookshelfModel({ item, materials }: FurnitureModelProps) {
         />
       ))}
       {Array.from({ length: shelfCount }, (_, shelfIndex) => shelfIndex).flatMap((shelfIndex) =>
-        [-0.28, -0.08, 0.14, 0.31].map((ratio, bookIndex) => (
+        [-0.3, -0.1, 0.1, 0.3].map((ratio, bookIndex) => (
           <Box
             key={`${shelfIndex}-${bookIndex}`}
-            size={[0.08 + bookIndex * 0.008, shelfGap * (0.48 + (bookIndex % 2) * 0.12), depth * 0.5]}
-            position={[innerWidth * ratio, 0.1 + shelfIndex * shelfGap + shelfGap * 0.28, depth * 0.12]}
-            rotation={[0, 0, bookIndex === 3 ? -0.12 : 0]}
+            size={[0.05 + bookIndex * 0.02, shelfGap * (0.48 + (bookIndex % 2) * 0.12), depth * 0.6]}
+            position={[innerWidth * ratio, 0.1 + shelfIndex * shelfGap + shelfGap * 0.3, depth * 0.2]}
+            rotation={[0, 0, bookIndex === 3 ? -0.02 : 0]}
             material={bookColors[(shelfIndex + bookIndex) % bookColors.length]}
-            outlineScale={1.025}
+            outlineScale={1.01}
           />
         )),
       )}

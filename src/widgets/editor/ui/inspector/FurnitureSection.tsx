@@ -1,4 +1,4 @@
-import { type FurnitureItem, getRoomBounds } from '@entities/scene'
+import { type FurnitureItem, findItemSupport, getFurnitureAnchor, getRoomBounds } from '@entities/scene'
 import { useEditorActions, useEditorSelector } from '@features/editor'
 import { shallowEqual } from '@shared/lib'
 import { Actions, Button, Field, FieldRow, Note } from '@shared/ui'
@@ -11,9 +11,17 @@ interface Props {
 }
 
 export function FurnitureSection({ item }: Props) {
-  const { rooms, issues } = useEditorSelector((state) => ({ rooms: state.rooms, issues: state.issues }), shallowEqual)
+  const { rooms, issues, supportName } = useEditorSelector(
+    (state) => ({
+      rooms: state.rooms,
+      issues: state.issues,
+      supportName: findItemSupport(item, state.scene.items)?.name ?? null,
+    }),
+    shallowEqual,
+  )
   const actions = useEditorActions()
   const itemIssues = issues.filter((issue) => issue.itemIds.includes(item.id))
+  const anchor = getFurnitureAnchor(item.kind)
 
   return (
     <section className="inspector-section object-section" aria-label="Selected object settings">
@@ -75,12 +83,24 @@ export function FurnitureSection({ item }: Props) {
         </Note>
       ) : (
         <Note tone="success" role="status">
-          Placement is valid
+          {anchor === 'surface'
+            ? supportName
+              ? `Resting on ${supportName}`
+              : 'Resting on the floor'
+            : anchor === 'floor'
+              ? 'Placement is valid'
+              : `Mounted ${item.elevation.toFixed(2)} m above the floor`}
         </Note>
       )}
 
       <p className="section-help">
-        Drag the object on the plan, hold Space to pan. Press R to turn it 45°, or , and . for 15° steps.
+        {anchor === 'wall'
+          ? 'Drag along a wall to move it; it slides past doors and windows and hops walls at a corner. Use the arrow handle in 3D to change its height.'
+          : anchor === 'ceiling'
+            ? 'Hangs from the ceiling. Use the arrow handle in 3D to lower it.'
+            : anchor === 'surface'
+              ? 'Drag it onto a table, shelf or cabinet and it settles on the surface. Sofas and beds do not carry decor.'
+              : 'Drag the object on the plan, hold Space to pan. Press R to turn it 45°, or , and . for 15° steps.'}
       </p>
 
       <Actions className="inspector-actions">

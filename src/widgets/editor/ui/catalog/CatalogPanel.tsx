@@ -1,4 +1,4 @@
-import { type CatalogItem, FURNITURE_CATALOG } from '@entities/scene'
+import { type CatalogItem, FURNITURE_CATALOG, type FurnitureCategory } from '@entities/scene'
 import { useEditorActions } from '@features/editor'
 import { useViewportInteraction } from '@features/viewport'
 import { Chip } from '@shared/ui'
@@ -11,9 +11,9 @@ interface Props {
   onRequestClose(): void
 }
 
-type CatalogGroup = 'All' | 'Living' | 'Work' | 'Bedroom' | 'Storage' | 'Dining'
+type CatalogGroup = 'All' | FurnitureCategory
 
-const groups: readonly CatalogGroup[] = ['All', 'Living', 'Work', 'Bedroom', 'Storage', 'Dining']
+const groups: readonly CatalogGroup[] = ['All', 'Living', 'Work', 'Bedroom', 'Storage', 'Dining', 'Lighting', 'Decor']
 
 type CatalogPreviewStyle = CSSProperties & { '--catalog-color': string }
 
@@ -22,9 +22,7 @@ function catalogPreviewStyle(color: string): CatalogPreviewStyle {
 }
 
 function belongsToGroup(item: CatalogItem, group: CatalogGroup): boolean {
-  if (group === 'All') return true
-  if (group === 'Living') return item.category === 'Living'
-  return item.category === group
+  return group === 'All' || item.category === group
 }
 
 export function CatalogPanel({ isExiting, onRequestClose }: Props) {

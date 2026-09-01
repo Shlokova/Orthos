@@ -32,6 +32,18 @@ const FURNITURE_KIND_COLOR: Readonly<Record<FurnitureKind, string>> = {
   chair: swatches.darkWood,
   bench: swatches.warmWood,
   rug: swatches.sand,
+  vase: swatches.cream,
+  'photo-frame': swatches.darkWood,
+  plant: swatches.leaf,
+  'table-lamp': swatches.sand,
+  books: swatches.olive,
+  shelf: swatches.warmWood,
+  painting: swatches.darkWood,
+  mirror: swatches.cream,
+  'wall-clock': swatches.olive,
+  'wall-tv': swatches.darkWood,
+  'wall-lamp': swatches.cream,
+  'ceiling-lamp': swatches.cream,
 }
 
 const FURNITURE_COLOR_SET = new Set(FURNITURE_COLOR_OPTIONS)

@@ -1,4 +1,4 @@
-import { FourLegs, RoundedBox } from '../FurniturePrimitives'
+import { FourLegs, RoundedBox } from '@widgets/scene/ui/furniture/FurniturePrimitives'
 import type { FurnitureModelProps } from './types'
 
 function WoodenTable({ item, materials, compact = false }: FurnitureModelProps & { compact?: boolean }) {
@@ -25,12 +25,6 @@ function WoodenTable({ item, materials, compact = false }: FurnitureModelProps &
         size={[width, topThickness, depth]}
         position={[0, item.height - topThickness / 2, 0]}
         material={materials.primary}
-      />
-      <RoundedBox
-        size={[width * 0.94, 0.035, depth * 0.94]}
-        position={[0, item.height + 0.012, 0]}
-        material={materials.secondary}
-        outlineScale={1.012}
       />
     </group>
   )

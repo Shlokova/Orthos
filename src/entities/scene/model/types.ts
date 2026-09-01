@@ -1,4 +1,8 @@
-export type FurnitureKind =
+export type FurnitureFamily = 'furniture' | 'decor' | 'lighting'
+
+export type FurnitureAnchor = 'floor' | 'surface' | 'wall' | 'ceiling'
+
+export type FloorFurnitureKind =
   | 'sofa'
   | 'armchair'
   | 'desk'
@@ -11,6 +15,14 @@ export type FurnitureKind =
   | 'chair'
   | 'bench'
   | 'rug'
+
+export type DecorFurnitureKind = 'vase' | 'photo-frame' | 'plant' | 'books'
+
+export type WallFurnitureKind = 'shelf' | 'painting' | 'mirror' | 'wall-clock' | 'wall-tv'
+
+export type LightingFurnitureKind = 'table-lamp' | 'wall-lamp' | 'ceiling-lamp'
+
+export type FurnitureKind = FloorFurnitureKind | DecorFurnitureKind | WallFurnitureKind | LightingFurnitureKind
 
 export interface Vec2 {
   readonly x: number
@@ -61,6 +73,7 @@ export interface FurnitureItem {
   readonly rotation: number
   readonly size: Size2D
   readonly height: number
+  readonly elevation: number
   readonly color: string
 }
 
@@ -70,7 +83,7 @@ export interface SceneState {
   readonly openings: readonly WallOpening[]
 }
 
-type ValidationIssueType = 'collision' | 'out-of-bounds' | 'vertical-bounds' | 'opening-overlap'
+type ValidationIssueType = 'collision' | 'out-of-bounds' | 'vertical-bounds' | 'opening-overlap' | 'opening-blocked'
 
 export interface ValidationIssue {
   readonly type: ValidationIssueType

@@ -5,6 +5,7 @@ import { shallowEqual } from '@shared/lib'
 import { useMemo } from 'react'
 import { CameraRig } from '../camera/CameraRig'
 import { ClearanceOverlay } from '../environment/ClearanceOverlay'
+import { FurnitureLights } from '../environment/FurnitureLights'
 import { PlanGrid } from '../environment/PlanGrid'
 import { PlanLighting } from '../environment/PlanLighting'
 import { PolygonFloor, RoomDrawingLayer, RoomTransformHandles, RoomVertexHandles, RoomWalls } from '../floor-plan'
@@ -76,6 +77,7 @@ export function FloorPlanScene() {
         />
       )}
       {viewMode === 'perspective' && <PlanLighting bounds={planBounds} maxHeight={maxHeight} />}
+      {viewMode === 'perspective' && <FurnitureLights items={items} />}
 
       {rooms.map((entry) => (
         <group key={entry.id}>
@@ -93,7 +95,12 @@ export function FloorPlanScene() {
       {viewMode === 'top' && <PlanGrid bounds={gridBounds} />}
       <ClearanceOverlay rooms={rooms} items={items} visible={heatmapVisible} occluded={viewMode === 'perspective'} />
       {items.map((item) => (
-        <FurnitureObject key={item.id} item={item} viewMode={viewMode} />
+        <FurnitureObject
+          key={item.id}
+          item={item}
+          room={rooms.find((entry) => entry.id === item.roomId) ?? null}
+          viewMode={viewMode}
+        />
       ))}
       <RoomTransformHandles
         room={room}
