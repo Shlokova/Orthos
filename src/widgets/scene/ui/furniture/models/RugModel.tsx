@@ -1,9 +1,8 @@
-import { Cylinder, RoundedBox } from '../FurniturePrimitives'
+import { RoundedBox } from '../FurniturePrimitives'
 import type { FurnitureModelProps } from './types'
 
 const RUG_ROWS = 4
 const RUG_COLUMNS = 6
-const RUG_FRINGE_COUNT = 7
 
 export function RugModel({ item, materials }: FurnitureModelProps) {
   const { width, depth } = item.size
@@ -36,19 +35,6 @@ export function RugModel({ item, materials }: FurnitureModelProps) {
           )
         }),
       )}
-      {Array.from({ length: RUG_FRINGE_COUNT }, (_, index) => index).map((index) => {
-        const divisor = RUG_FRINGE_COUNT - 1
-        const x = -width / 2 + (width / divisor) * index
-        return (
-          <Cylinder
-            key={index}
-            size={[0.012, 0.11, 0.012]}
-            position={[x, item.height / 2, -depth / 2 - 0.055]}
-            rotation={[Math.PI / 2, 0, 0]}
-            material={materials.dark}
-          />
-        )
-      })}
     </group>
   )
 }

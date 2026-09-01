@@ -1,9 +1,13 @@
 export { analyzeClearance, FURNITURE_CLEARANCE_PADDING } from './model/clearance/clearanceAnalysis'
 export { scenesEqual } from './model/equality'
-export type { CatalogItem } from './model/furniture/catalog'
+export type { AnchorContext, AnchorReach, AnchorStrategy } from './model/furniture/anchors'
+export { getItemAnchorStrategy } from './model/furniture/anchors'
+export type { CatalogItem, FurnitureCategory, LightEmitterDefinition } from './model/furniture/catalog'
 export {
   FURNITURE_CATALOG,
   getCatalogItem,
+  getFurnitureAnchor,
+  getFurnitureFamily,
 } from './model/furniture/catalog'
 export {
   furnitureItemsIntersect3D,
@@ -23,6 +27,16 @@ export {
   itemFitsRoomAt,
 } from './model/furniture/roomPlacement'
 export {
+  carrySupportedItems,
+  findItemSupport,
+  settleSurfaceItems,
+} from './model/furniture/support'
+export type { WallMount, WallMountScope } from './model/furniture/wallMounting'
+export {
+  getItemWallIndex,
+  mountItemOnWall,
+} from './model/furniture/wallMounting'
+export {
   DEFAULT_ROOM_HEIGHT,
   MAX_ROOM_VERTICES,
   MAX_ROOMS,
@@ -30,6 +44,7 @@ export {
   ROOM_LIMITS,
   ROOM_NAME_MAX_LENGTH,
 } from './model/room/limits'
+export { itemObstructsOpening } from './model/room/openingObstruction'
 export type { OpeningPlacementScope } from './model/room/openingPlacement'
 export {
   openingsOverlap,
@@ -90,6 +105,8 @@ export {
 } from './model/sceneLimits'
 export type {
   Bounds2D,
+  FurnitureAnchor,
+  FurnitureFamily,
   FurnitureItem,
   FurnitureKind,
   OpeningKind,

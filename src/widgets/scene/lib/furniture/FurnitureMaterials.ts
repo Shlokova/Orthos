@@ -15,6 +15,7 @@ export interface FurnitureMaterials {
   fabric: THREE.MeshStandardMaterial
   accent: THREE.MeshStandardMaterial
   white: THREE.MeshStandardMaterial
+  lampShade: THREE.MeshStandardMaterial
 }
 
 function deriveColor(base: string, target: string, amount: number): string {
@@ -29,6 +30,8 @@ function createMaterial(
     transparent?: boolean
     opacity?: number
     depthWrite?: boolean
+    emissive?: string
+    emissiveIntensity?: number
   } = {},
 ): THREE.MeshStandardMaterial {
   return new THREE.MeshStandardMaterial({
@@ -38,6 +41,8 @@ function createMaterial(
     transparent: options.transparent ?? false,
     opacity: options.opacity ?? 1,
     depthWrite: options.depthWrite ?? true,
+    ...(options.emissive ? { emissive: options.emissive } : {}),
+    ...(options.emissiveIntensity === undefined ? {} : { emissiveIntensity: options.emissiveIntensity }),
   })
 }
 
@@ -55,9 +60,14 @@ const COMMON_MATERIALS = {
   fabric: createMaterial(SCENE_THEME.palette.fabric, { roughness: 0.96 }),
   accent: createMaterial(SCENE_THEME.palette.terracotta, { roughness: 0.8 }),
   white: createMaterial(SCENE_THEME.palette.paper, { roughness: 0.94 }),
+  lampShade: createMaterial(SCENE_THEME.palette.lightWarm, {
+    roughness: 0.62,
+    emissive: SCENE_THEME.palette.lightWarm,
+    emissiveIntensity: 0.85,
+  }),
 } satisfies Pick<
   FurnitureMaterials,
-  'cream' | 'green' | 'greenLight' | 'metal' | 'glass' | 'fabric' | 'accent' | 'white'
+  'cream' | 'green' | 'greenLight' | 'metal' | 'glass' | 'fabric' | 'accent' | 'white' | 'lampShade'
 >
 
 export function useFurnitureMaterials(item: FurnitureItem): FurnitureMaterials {

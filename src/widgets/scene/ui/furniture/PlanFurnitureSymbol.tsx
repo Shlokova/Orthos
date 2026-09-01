@@ -4,11 +4,14 @@ import { useMemo } from 'react'
 import * as THREE from 'three'
 import { NativePolyline } from '../primitives/NativePolyline'
 import { BedSymbol } from './plan-symbols/BedroomSymbols'
+import { DecorSymbol } from './plan-symbols/DecorSymbols'
+import { LightingSymbol } from './plan-symbols/LightingSymbols'
 import { footprintOutline, type PlanSymbolProps, Rect } from './plan-symbols/primitives'
 import { RugSymbol } from './plan-symbols/RugSymbol'
 import { BenchSymbol, ChairSymbol, SofaSymbol } from './plan-symbols/SeatingSymbols'
 import { StorageSymbol } from './plan-symbols/StorageSymbols'
 import { TableSymbol } from './plan-symbols/TableSymbols'
+import { WallSymbol } from './plan-symbols/WallSymbols'
 
 const UI_GREEN = SCENE_THEME.palette.olivePlan
 const UI_RED = SCENE_THEME.palette.invalidUi
@@ -42,6 +45,21 @@ function KindSymbol(props: PlanSymbolProps) {
     case 'bookshelf':
     case 'wardrobe':
       return <StorageSymbol {...props} />
+    case 'vase':
+    case 'photo-frame':
+    case 'plant':
+    case 'books':
+      return <DecorSymbol {...props} />
+    case 'table-lamp':
+    case 'wall-lamp':
+    case 'ceiling-lamp':
+      return <LightingSymbol {...props} />
+    case 'shelf':
+    case 'painting':
+    case 'mirror':
+    case 'wall-clock':
+    case 'wall-tv':
+      return <WallSymbol {...props} />
   }
 }
 

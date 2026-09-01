@@ -1,14 +1,26 @@
-import { openingWorldPosition, projectPointToClosestWall, type RoomDefinition, type WallOpening } from '@entities/scene'
+import { getOpeningLimits, openingWorldPosition, type RoomDefinition, type WallOpening } from '@entities/scene'
 import { useEditorActions, type ViewMode } from '@features/editor'
 import { useViewportInteraction } from '@features/viewport'
 import type { ThreeEvent } from '@react-three/fiber'
 import { SCENE_THEME } from '@shared/config/theme'
-import { snap } from '@shared/lib'
-import { useRef } from 'react'
-import { FLOOR_PLANE } from '../../lib/geometry/constants'
+import * as THREE from 'three'
+import { WALL_THICKNESS } from '../../lib/geometry/constants'
 import { planAngleToSceneY } from '../../lib/geometry/sceneCoordinates'
-import { useNativePlaneDrag } from '../../lib/interactions/useNativePlaneDrag'
+import { useOpeningDrag } from '../../lib/interactions/useOpeningDrag'
+import { useVerticalDrag } from '../../lib/interactions/useVerticalDrag'
+import { HeightHandle } from '../primitives/HeightHandle'
 import { NativePolyline } from '../primitives/NativePolyline'
+
+const OPENING_HIT_MATERIAL = new THREE.MeshBasicMaterial({
+  colorWrite: false,
+  depthWrite: false,
+  depthTest: false,
+  side: THREE.DoubleSide,
+})
+
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => OPENING_HIT_MATERIAL.dispose())
+}
 
 interface OpeningVisualProps {
   opening: WallOpening
@@ -20,13 +32,18 @@ interface OpeningVisualProps {
 
 export function OpeningVisual({ opening, room, selected, invalid, viewMode }: OpeningVisualProps) {
   const { interactionTool } = useViewportInteraction()
-  const { selectOpening, updateOpening, beginTransaction, endTransaction, cancelTransaction } = useEditorActions()
-  const planeDrag = useNativePlaneDrag()
-  const openingRef = useRef(opening)
-  const roomRef = useRef(room)
-  openingRef.current = opening
-  roomRef.current = room
+  const { updateOpening } = useEditorActions()
+  const handlePointerDown = useOpeningDrag({ opening, room, viewMode, interactionTool })
   const frame = openingWorldPosition(opening, room)
+  const limits = getOpeningLimits(opening, room)
+  const adjustableSill = limits.sillHeight.max > limits.sillHeight.min
+  const handleSillPointerDown = useVerticalDrag({
+    origin: frame.position,
+    value: opening.sillHeight,
+    bounds: limits.sillHeight,
+    interactionTool,
+    onPreview: (sillHeight) => updateOpening(opening.id, { sillHeight }, 'preview'),
+  })
   const color = invalid
     ? SCENE_THEME.palette.invalidUi
     : selected
@@ -36,43 +53,25 @@ export function OpeningVisual({ opening, room, selected, invalid, viewMode }: Op
         : SCENE_THEME.palette.olivePlan
 
   return (
-    <group
-      position={[frame.position.x, 0, frame.position.z]}
-      rotation-y={planAngleToSceneY(frame.angle)}
-      onPointerDown={(event: ThreeEvent<PointerEvent>) => {
-        if (interactionTool === 'pan') return
-        event.stopPropagation()
-        selectOpening(opening.id)
-        if (viewMode !== 'top') return
-        let activeWallIndex = opening.wallIndex
-        planeDrag.start(event, FLOOR_PLANE, {
-          onStart: beginTransaction,
-          onMove: (point) => {
-            const liveRoom = roomRef.current
-            const liveOpening = openingRef.current
-            const projection = projectPointToClosestWall(liveRoom, { x: point.x, z: point.z }, activeWallIndex, 0.035)
-            activeWallIndex = projection.wallIndex
-            const wallLength = Math.max(projection.wallLength, 1e-6)
-            const snappedDistance = snap(projection.offset * wallLength, 0.05)
-            updateOpening(
-              liveOpening.id,
-              {
-                wallIndex: activeWallIndex,
-                offset: snappedDistance / wallLength,
-              },
-              'preview',
-            )
-          },
-          onEnd: (cancelled) => (cancelled ? cancelTransaction() : endTransaction()),
-        })
-      }}
-    >
+    <group position={[frame.position.x, 0, frame.position.z]} rotation-y={planAngleToSceneY(frame.angle)}>
       {viewMode === 'top' ? (
-        <TopOpening opening={opening} color={color} selected={selected} />
-      ) : opening.kind === 'window' ? (
-        <WindowOpening opening={opening} color={color} />
+        <TopOpening opening={opening} color={color} selected={selected} onPointerDown={handlePointerDown} />
       ) : (
-        <DoorOpening opening={opening} color={color} />
+        <>
+          {opening.kind === 'window' ? (
+            <WindowOpening opening={opening} color={color} />
+          ) : (
+            <DoorOpening opening={opening} color={color} />
+          )}
+          <VolumeOpeningHitArea opening={opening} onPointerDown={handlePointerDown} />
+        </>
+      )}
+      {viewMode !== 'top' && selected && adjustableSill && (
+        <HeightHandle
+          width={opening.width}
+          centerY={opening.sillHeight + opening.height / 2}
+          onPointerDown={handleSillPointerDown}
+        />
       )}
       {viewMode !== 'top' && selected && (
         <mesh position={[0, opening.sillHeight + opening.height / 2, 0]} renderOrder={6}>
@@ -84,11 +83,34 @@ export function OpeningVisual({ opening, room, selected, invalid, viewMode }: Op
   )
 }
 
+function VolumeOpeningHitArea({
+  opening,
+  onPointerDown,
+}: {
+  opening: WallOpening
+  onPointerDown(event: ThreeEvent<PointerEvent>): void
+}) {
+  return (
+    <mesh
+      position={[0, opening.sillHeight + opening.height / 2, 0]}
+      material={OPENING_HIT_MATERIAL}
+      renderOrder={-1}
+      onPointerDown={onPointerDown}
+    >
+      <boxGeometry args={[opening.width, opening.height, WALL_THICKNESS * 3]} />
+    </mesh>
+  )
+}
+
 function TopOpening({
   opening,
   color,
   selected,
-}: Pick<OpeningVisualProps, 'opening' | 'selected'> & { color: string }) {
+  onPointerDown,
+}: Pick<OpeningVisualProps, 'opening' | 'selected'> & {
+  color: string
+  onPointerDown(event: ThreeEvent<PointerEvent>): void
+}) {
   const hitDepth = Math.max(0.46, opening.width * 0.42)
   if (opening.kind === 'window') {
     return (
@@ -111,9 +133,8 @@ function TopOpening({
           depthTest={false}
           renderOrder={33}
         />
-        <mesh position={[0, 0.07, 0]} renderOrder={34}>
+        <mesh position={[0, 0.07, 0]} renderOrder={34} material={OPENING_HIT_MATERIAL} onPointerDown={onPointerDown}>
           <boxGeometry args={[opening.width + 0.35, 0.05, hitDepth]} />
-          <meshBasicMaterial transparent opacity={0} depthWrite={false} />
         </mesh>
         {selected && (
           <NativePolyline
@@ -152,9 +173,13 @@ function TopOpening({
       </mesh>
       <NativePolyline points={[[hingeX, 0.1, 0], leafEnd]} color={color} depthTest={false} renderOrder={34} />
       <NativePolyline points={arc} color={color} depthTest={false} renderOrder={34} />
-      <mesh position={[0, 0.07, opening.width * 0.22]} renderOrder={35}>
+      <mesh
+        position={[0, 0.07, opening.width * 0.22]}
+        renderOrder={35}
+        material={OPENING_HIT_MATERIAL}
+        onPointerDown={onPointerDown}
+      >
         <boxGeometry args={[opening.width + 0.4, 0.05, Math.max(hitDepth, opening.width * 0.8)]} />
-        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
       </mesh>
       {selected && (
         <NativePolyline

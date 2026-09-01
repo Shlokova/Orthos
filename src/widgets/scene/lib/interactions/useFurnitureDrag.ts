@@ -1,4 +1,4 @@
-import type { FurnitureItem } from '@entities/scene'
+import { type FurnitureItem, getFurnitureAnchor } from '@entities/scene'
 import { useEditorActions, type ViewMode } from '@features/editor'
 import type { ThreeEvent } from '@react-three/fiber'
 import { snap } from '@shared/lib'
@@ -15,9 +15,12 @@ interface FurnitureDragOptions {
 
 const UP = new THREE.Vector3(0, 1, 0)
 
+export function horizontalPlaneAt(height: number): THREE.Plane {
+  return new THREE.Plane(UP.clone(), -Math.max(height, 0))
+}
+
 function grabPlaneFor(viewMode: ViewMode, grabHeight: number): THREE.Plane {
-  if (viewMode === 'top') return FLOOR_PLANE
-  return new THREE.Plane(UP.clone(), -Math.max(grabHeight, 0))
+  return viewMode === 'top' ? FLOOR_PLANE : horizontalPlaneAt(grabHeight)
 }
 
 export function useFurnitureDrag({ item, viewMode, interactionTool }: FurnitureDragOptions) {
@@ -32,6 +35,7 @@ export function useFurnitureDrag({ item, viewMode, interactionTool }: FurnitureD
     select(item.id)
 
     const initial = itemRef.current
+    const followsWall = getFurnitureAnchor(initial.kind) === 'wall'
     const plane = grabPlaneFor(viewMode, event.point.y)
     const projected = planeDrag.project(event.nativeEvent, plane)
     if (!projected) return
@@ -42,16 +46,10 @@ export function useFurnitureDrag({ item, viewMode, interactionTool }: FurnitureD
     planeDrag.start(event, plane, {
       onStart: beginTransaction,
       onMove: (point) => {
-        updateItem(
-          initial.id,
-          {
-            position: {
-              x: snap(point.x + offsetX),
-              z: snap(point.z + offsetZ),
-            },
-          },
-          'preview',
-        )
+        const desiredX = point.x + offsetX
+        const desiredZ = point.z + offsetZ
+        const position = followsWall ? { x: desiredX, z: desiredZ } : { x: snap(desiredX), z: snap(desiredZ) }
+        updateItem(initial.id, { position }, 'preview')
       },
       onEnd: (cancelled) => (cancelled ? cancelTransaction() : endTransaction()),
     })

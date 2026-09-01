@@ -1,9 +1,14 @@
 import {
+  type AnchorReach,
+  carrySupportedItems,
   FURNITURE_LIMITS,
   type FurnitureFactory,
   type FurnitureItem,
   type FurnitureKind,
   furnitureItemsIntersect3D,
+  getCatalogItem,
+  getItemAnchorStrategy,
+  getItemWallIndex,
   getRoomBounds,
   isHexColor,
   itemFitsRoomAt,
@@ -11,6 +16,7 @@ import {
   normalizeAngle,
   type RoomDefinition,
   type SceneState,
+  settleSurfaceItems,
 } from '@entities/scene'
 import { clamp, snap } from '@shared/lib'
 
@@ -25,6 +31,25 @@ const MAX_PLACEMENT_RINGS = 14
 
 function roomForItem(scene: SceneState, item: FurnitureItem): RoomDefinition | null {
   return scene.rooms.find((room) => room.id === item.roomId) ?? null
+}
+
+function anchorItem(
+  scene: SceneState,
+  item: FurnitureItem,
+  room: RoomDefinition,
+  reach: AnchorReach,
+  previousWallIndex?: number,
+): FurnitureItem | null {
+  return getItemAnchorStrategy(item.kind).place(item, {
+    room,
+    siblings: scene.items,
+    reach,
+    previousWallIndex,
+  })
+}
+
+function anchorsToWall(item: FurnitureItem): boolean {
+  return getCatalogItem(item.kind).anchor === 'wall'
 }
 
 function hasFurnitureCollision(item: FurnitureItem, items: readonly FurnitureItem[], ignoredId?: string): boolean {
@@ -104,11 +129,22 @@ export function addItem(
   if (!room) return { scene, notice: 'The selected room is no longer available.' }
 
   const created = factory.create(kind, room, scene.items.filter((entry) => entry.roomId === room.id).length)
-  const item = findAvailablePlacement(created, room, scene.items)
-  if (!item) return { scene, notice: `There is not enough free floor space for ${created.name}.` }
+
+  if (anchorsToWall(created)) {
+    const mounted = anchorItem(scene, created, room, 'anywhere')
+    if (!mounted) return { scene, notice: `There is no free wall space for ${created.name}.` }
+    return {
+      scene: { ...scene, items: [...scene.items, mounted] },
+      selectedItemId: mounted.id,
+    }
+  }
+
+  const placed = findAvailablePlacement(created, room, scene.items)
+  if (!placed) return { scene, notice: `There is not enough free floor space for ${created.name}.` }
+  const item = anchorItem(scene, placed, room, 'nearest') ?? placed
 
   return {
-    scene: { ...scene, items: [...scene.items, item] },
+    scene: settleSurfaceItems({ ...scene, items: [...scene.items, item] }),
     selectedItemId: item.id,
   }
 }
@@ -137,20 +173,30 @@ export function patchItem(scene: SceneState, id: string, patch: Partial<Furnitur
       depth: clamp(requestedSize.depth, FURNITURE_LIMITS.depth.min, FURNITURE_LIMITS.depth.max),
     },
     height: clamp(patch.height ?? item.height, FURNITURE_LIMITS.height.min, FURNITURE_LIMITS.height.max),
+    elevation: clamp(patch.elevation ?? item.elevation, FURNITURE_LIMITS.elevation.min, FURNITURE_LIMITS.elevation.max),
     rotation: normalizeAngle(patch.rotation ?? item.rotation),
   }
 
   const room = roomForItem(scene, desired)
-  if (!room || !itemFitsRoomAt(desired, room)) return scene
+  if (!room) return scene
 
-  const items = scene.items.slice()
-  items[index] = desired
-  return { ...scene, items }
+  const placed = anchorItem(
+    scene,
+    desired,
+    room,
+    'nearest',
+    anchorsToWall(item) ? getItemWallIndex(item, room) : undefined,
+  )
+  if (!placed || !itemFitsRoomAt(placed, room)) return scene
+
+  const items = carrySupportedItems(scene.items, item, placed).slice()
+  items[index] = placed
+  return settleSurfaceItems({ ...scene, items })
 }
 
 export function removeItem(scene: SceneState, id: string): SceneState {
   if (!scene.items.some((item) => item.id === id)) return scene
-  return { ...scene, items: scene.items.filter((item) => item.id !== id) }
+  return settleSurfaceItems({ ...scene, items: scene.items.filter((item) => item.id !== id) })
 }
 
 export function duplicateItem(scene: SceneState, id: string, createId: () => string): ItemCommandResult {
@@ -167,11 +213,20 @@ export function duplicateItem(scene: SceneState, id: string, createId: () => str
     position: { x: source.position.x + PLACEMENT_STEP, z: source.position.z + PLACEMENT_STEP },
     size: { ...source.size },
   }
+  if (anchorsToWall(source)) {
+    const mounted = anchorItem(scene, { ...desired, position: { ...source.position } }, room, 'anywhere')
+    if (!mounted) return { scene, notice: `There is no free wall space to duplicate ${source.name}.` }
+    return {
+      scene: { ...scene, items: [...scene.items, mounted] },
+      selectedItemId: mounted.id,
+    }
+  }
+
   const duplicate = findAvailablePlacement(desired, room, scene.items)
   if (!duplicate) return { scene, notice: `There is not enough free floor space to duplicate ${source.name}.` }
 
   return {
-    scene: { ...scene, items: [...scene.items, duplicate] },
+    scene: settleSurfaceItems({ ...scene, items: [...scene.items, duplicate] }),
     selectedItemId: duplicate.id,
   }
 }

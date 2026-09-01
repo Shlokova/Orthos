@@ -76,7 +76,7 @@ export function isItemInsideRoom(item: FurnitureItem, room: RoomDefinition): boo
 }
 
 export function isItemVerticallyInsideRoom(item: FurnitureItem, room: RoomDefinition): boolean {
-  return item.height <= room.height + GEOMETRY_EPSILON
+  return item.elevation + item.height <= room.height + GEOMETRY_EPSILON
 }
 
 function getCollisionVolumes(item: FurnitureItem): CollisionVolume[] {
@@ -90,8 +90,8 @@ function getCollisionVolumes(item: FurnitureItem): CollisionVolume[] {
     }
     const offset = rotatePoint(localOffset, item.rotation)
     return {
-      minY: item.height * part.minY,
-      maxY: item.height * part.maxY,
+      minY: item.elevation + item.height * part.minY,
+      maxY: item.elevation + item.height * part.maxY,
       position: { x: item.position.x + offset.x, z: item.position.z + offset.z },
       rotation: item.rotation,
       size: {
@@ -130,5 +130,14 @@ export function furnitureItemsIntersect3D(first: FurnitureItem, second: Furnitur
 }
 
 export function itemBlocksClearance(item: FurnitureItem): boolean {
+  if (item.elevation > GEOMETRY_EPSILON) return false
   return getCatalogItem(item.kind).walkable !== true && item.height > 0.08
+}
+
+export function itemTopSurface(item: FurnitureItem): number {
+  return item.elevation + item.height
+}
+
+export function pointInsideItemFootprint(point: Vec2, item: FurnitureItem): boolean {
+  return pointInPolygon(point, getRectangleCorners(item), true)
 }

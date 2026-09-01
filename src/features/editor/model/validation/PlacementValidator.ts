@@ -4,6 +4,7 @@ import {
   furnitureItemsIntersect3D,
   isItemInsideRoom,
   isItemVerticallyInsideRoom,
+  itemObstructsOpening,
   openingsOverlap,
   type RoomDefinition,
   type ValidationIssue,
@@ -180,6 +181,45 @@ export class OpeningRule implements PlacementRule {
       }
     }
 
+    this.previousRooms = rooms
+    this.previousOpenings = openings
+    this.previousIssues = issues
+    return issues
+  }
+}
+
+export class OpeningObstructionRule implements PlacementRule {
+  private previousItems: readonly FurnitureItem[] | null = null
+  private previousRooms: readonly RoomDefinition[] | null = null
+  private previousOpenings: readonly WallOpening[] | null = null
+  private previousIssues: ValidationIssue[] = []
+
+  validate(
+    items: readonly FurnitureItem[],
+    rooms: readonly RoomDefinition[],
+    openings: readonly WallOpening[] = [],
+  ): ValidationIssue[] {
+    if (this.previousItems === items && this.previousRooms === rooms && this.previousOpenings === openings) {
+      return this.previousIssues
+    }
+
+    const roomsById = new Map(rooms.map((room) => [room.id, room]))
+    const issues: ValidationIssue[] = []
+    for (const item of items) {
+      const room = roomsById.get(item.roomId)
+      if (!room) continue
+      for (const opening of openings) {
+        if (opening.roomId !== item.roomId) continue
+        if (!itemObstructsOpening(item, opening, room)) continue
+        issues.push({
+          type: 'opening-blocked',
+          itemIds: [item.id, opening.id],
+          message: `${item.name} blocks the ${opening.kind}`,
+        })
+      }
+    }
+
+    this.previousItems = items
     this.previousRooms = rooms
     this.previousOpenings = openings
     this.previousIssues = issues

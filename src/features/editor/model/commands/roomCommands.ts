@@ -6,7 +6,10 @@ import {
   createRectangularRoom,
   createRoomFromVertices,
   DEFAULT_ROOM_HEIGHT,
+  type FurnitureItem,
   findOverlappingRoom,
+  getCatalogItem,
+  getItemAnchorStrategy,
   getPlanBounds,
   getRoomBounds,
   getWallSegment,
@@ -24,6 +27,7 @@ import {
   resizeRoomBounds,
   resizeRoomFromHandle as resizeRoomFromHandleGeometry,
   type SceneState,
+  settleSurfaceItems,
   translateRoom,
   updateRoomVertex,
   type Vec2,
@@ -61,21 +65,33 @@ function replaceRoom(scene: SceneState, room: RoomDefinition): RoomCommandResult
     return { scene, notice: 'The doors and windows no longer fit these walls. Move or remove one and try again.' }
   }
 
-  const items = scene.items.map((item) => (item.roomId === room.id ? constrainItemToRooms(item, item, rooms) : item))
+  const openings = [...scene.openings.filter((opening) => opening.roomId !== room.id), ...reflowedOpenings]
+  const items: FurnitureItem[] = []
+  for (const item of scene.items) {
+    if (item.roomId !== room.id) {
+      items.push(item)
+      continue
+    }
+    if (getCatalogItem(item.kind).anchor === 'wall') {
+      const siblings = [...items, ...scene.items.slice(items.length + 1)]
+      const mounted = getItemAnchorStrategy(item.kind).place(item, {
+        room,
+        siblings,
+        reach: 'anywhere',
+      })
+      items.push(mounted ?? item)
+      continue
+    }
+    items.push(constrainItemToRooms(item, item, rooms))
+  }
+
   const trapped = items.find((item) => {
     const assignedRoom = rooms.find((candidate) => candidate.id === item.roomId)
     return !assignedRoom || !itemFitsRoomAt(item, assignedRoom)
   })
   if (trapped) return { scene, notice: `${trapped.name} would not fit in the room any more.` }
 
-  return {
-    scene: {
-      ...scene,
-      rooms,
-      items,
-      openings: [...scene.openings.filter((opening) => opening.roomId !== room.id), ...reflowedOpenings],
-    },
-  }
+  return { scene: settleSurfaceItems({ ...scene, rooms, items, openings }) }
 }
 
 export function patchRoom(scene: SceneState, roomId: string, patch: RoomPatch): RoomCommandResult {

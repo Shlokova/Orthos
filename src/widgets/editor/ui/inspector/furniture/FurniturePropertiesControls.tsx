@@ -1,4 +1,10 @@
-import { FURNITURE_COLOR_CHOICES, FURNITURE_LIMITS, type FurnitureItem, resolveFurnitureColor } from '@entities/scene'
+import {
+  FURNITURE_COLOR_CHOICES,
+  FURNITURE_LIMITS,
+  type FurnitureItem,
+  getItemAnchorStrategy,
+  resolveFurnitureColor,
+} from '@entities/scene'
 import type { EditorActions } from '@features/editor'
 import { FieldRow } from '@shared/ui'
 import type { CSSProperties } from 'react'
@@ -17,6 +23,7 @@ interface Props {
 
 export function FurniturePropertiesControls({ item, actions }: Props) {
   const resolvedColor = resolveFurnitureColor(item)
+  const { editableElevation } = getItemAnchorStrategy(item.kind)
   return (
     <>
       <div className="object-color-field">
@@ -57,15 +64,38 @@ export function FurniturePropertiesControls({ item, actions }: Props) {
           onChange={(depth) => actions.updateItem(item.id, { size: { ...item.size, depth } }, 'preview')}
         />
       </FieldRow>
-      <NumberField
-        label="Height"
-        unit="m"
-        value={item.height}
-        step={0.05}
-        min={FURNITURE_LIMITS.height.min}
-        max={FURNITURE_LIMITS.height.max}
-        onChange={(height) => actions.updateItem(item.id, { height }, 'preview')}
-      />
+      {editableElevation ? (
+        <FieldRow>
+          <NumberField
+            label="Height"
+            unit="m"
+            value={item.height}
+            step={0.05}
+            min={FURNITURE_LIMITS.height.min}
+            max={FURNITURE_LIMITS.height.max}
+            onChange={(height) => actions.updateItem(item.id, { height }, 'preview')}
+          />
+          <NumberField
+            label="Above floor"
+            unit="m"
+            value={item.elevation}
+            step={0.05}
+            min={FURNITURE_LIMITS.elevation.min}
+            max={FURNITURE_LIMITS.elevation.max}
+            onChange={(elevation) => actions.updateItem(item.id, { elevation }, 'preview')}
+          />
+        </FieldRow>
+      ) : (
+        <NumberField
+          label="Height"
+          unit="m"
+          value={item.height}
+          step={0.05}
+          min={FURNITURE_LIMITS.height.min}
+          max={FURNITURE_LIMITS.height.max}
+          onChange={(height) => actions.updateItem(item.id, { height }, 'preview')}
+        />
+      )}
     </>
   )
 }

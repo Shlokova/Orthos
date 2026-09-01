@@ -80,6 +80,12 @@ function isFurnitureItem(value: unknown): value is FurnitureItem {
     value.height > FURNITURE_LIMITS.height.max
   )
     return false
+  if (
+    !isFiniteNumber(value.elevation) ||
+    value.elevation < FURNITURE_LIMITS.elevation.min ||
+    value.elevation > FURNITURE_LIMITS.elevation.max
+  )
+    return false
   if (!isVec2(value.position)) return false
   return (
     isRecord(value.size) &&
