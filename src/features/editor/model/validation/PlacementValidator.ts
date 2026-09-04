@@ -47,12 +47,12 @@ export class BoundsRule implements PlacementRule {
 
       const issues: ValidationIssue[] = []
       if (!isItemInsideRoom(item, room)) {
-        issues.push({type: 'out-of-bounds', itemIds: [item.id], message: `${item.name} crosses the room polygon`})
+        issues.push({ type: 'out-of-bounds', itemIds: [item.id], message: `${item.name} crosses the room polygon` })
       }
       if (!isItemVerticallyInsideRoom(item, room)) {
-        issues.push({type: 'vertical-bounds', itemIds: [item.id], message: `${item.name} is taller than the room`})
+        issues.push({ type: 'vertical-bounds', itemIds: [item.id], message: `${item.name} is taller than the room` })
       }
-      this.cache.set(item, {room, issues})
+      this.cache.set(item, { room, issues })
       return issues
     })
   }
@@ -201,7 +201,7 @@ export class OpeningObstructionRule implements PlacementRule {
   private previousIssues: ValidationIssue[] = []
   private layoutRooms: readonly RoomDefinition[] | null = null
   private layoutOpenings: readonly WallOpening[] | null = null
-  private layout: RoomWallOpenings = {roomsById: new Map(), openingsByRoom: new Map()}
+  private layout: RoomWallOpenings = { roomsById: new Map(), openingsByRoom: new Map() }
 
   validate(
     items: readonly FurnitureItem[],
@@ -212,7 +212,7 @@ export class OpeningObstructionRule implements PlacementRule {
       return this.previousIssues
     }
 
-    const {roomsById, openingsByRoom} = this.resolveLayout(rooms, openings)
+    const { roomsById, openingsByRoom } = this.resolveLayout(rooms, openings)
     const issues: ValidationIssue[] = []
     for (const item of items) {
       const room = roomsById.get(item.roomId)
@@ -248,8 +248,7 @@ export class OpeningObstructionRule implements PlacementRule {
 }
 
 export class PlacementValidator {
-  constructor(private readonly rules: PlacementRule[]) {
-  }
+  constructor(private readonly rules: PlacementRule[]) {}
 
   validate(
     items: readonly FurnitureItem[],
