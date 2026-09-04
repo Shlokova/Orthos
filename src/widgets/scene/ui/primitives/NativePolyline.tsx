@@ -23,7 +23,7 @@ function getLineMaterial(color: THREE.ColorRepresentation, depthTest: boolean): 
     color,
     depthTest,
     depthWrite: depthTest,
-    transparent: false,
+    transparent: true,
     toneMapped: false,
   })
   MATERIAL_CACHE.set(key, material)

@@ -5,6 +5,7 @@ import type { ThreeEvent } from '@react-three/fiber'
 import { SCENE_THEME } from '@shared/config/theme'
 import { snap } from '@shared/lib'
 import { FLOOR_PLANE } from '../../lib/geometry/constants'
+import { PLAN_ORDER } from '../../lib/geometry/planLayers'
 import { useNativePlaneDrag } from '../../lib/interactions/useNativePlaneDrag'
 
 function VertexHandle({ room, vertex, index }: { room: RoomDefinition; vertex: Vec2; index: number }) {
@@ -15,7 +16,7 @@ function VertexHandle({ room, vertex, index }: { room: RoomDefinition; vertex: V
   return (
     <group position={[vertex.x, 0.11, vertex.z]}>
       <mesh
-        renderOrder={40}
+        renderOrder={PLAN_ORDER.handles + 2}
         onPointerDown={(event: ThreeEvent<PointerEvent>) => {
           if (interactionTool === 'pan') return
           planeDrag.start(event, FLOOR_PLANE, {
@@ -29,7 +30,7 @@ function VertexHandle({ room, vertex, index }: { room: RoomDefinition; vertex: V
         }}
       >
         <sphereGeometry args={[0.115, 18, 12]} />
-        <meshBasicMaterial color={SCENE_THEME.palette.terracottaHandle} depthTest={false} />
+        <meshBasicMaterial color={SCENE_THEME.palette.terracottaHandle} transparent depthTest={false} />
       </mesh>
     </group>
   )

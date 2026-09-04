@@ -1,15 +1,33 @@
+import { SCENE_THEME } from '@shared/config/theme'
 import { NativePolyline } from '../../primitives/NativePolyline'
-import { DETAIL, footprintOutline, type PlanSymbolProps, Rect } from './primitives'
+import { DETAIL, footprintOutline, Hatch, type PlanSymbolProps, Rect } from './primitives'
 
-export function RugSymbol({ color, width, depth, insetW, insetD, detailOrder, outlineOrder }: PlanSymbolProps) {
+export function RugSymbol({
+  colors,
+  width,
+  depth,
+  insetW,
+  insetD,
+  fillOrder,
+  detailOrder,
+  outlineOrder,
+}: PlanSymbolProps) {
   return (
     <>
       <Rect
         width={width - insetW}
         depth={depth - insetD}
-        color={color}
+        color={colors.primary}
         y={0.035}
         opacity={0.72}
+        renderOrder={fillOrder}
+      />
+      <Hatch
+        width={width * 0.86}
+        depth={depth * 0.82}
+        spacing={Math.max(0.16, Math.min(width, depth) * 0.22)}
+        color={SCENE_THEME.palette.hatch}
+        y={0.038}
         renderOrder={detailOrder}
       />
       <NativePolyline

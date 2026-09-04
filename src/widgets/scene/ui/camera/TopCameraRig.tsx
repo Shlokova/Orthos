@@ -7,6 +7,7 @@ import { orthographicZoomPercent, scaleClamped } from '../../lib/camera/cameraCo
 import {
   calculateTopCameraZoom,
   getPlanCameraMetrics,
+  PLAN_DIMENSION_MARGIN,
   type PlanCameraMetrics,
   topViewNeedsMoreSpace,
 } from '../../lib/camera/cameraMath'
@@ -17,7 +18,7 @@ import type { CameraModeRigProps } from './cameraRig.types'
 const CAMERA_EPSILON = 1e-5
 const ZOOM_STEP = 1.15
 
-export function TopCameraRig({ rooms, isDragging, interactionLocked }: CameraModeRigProps) {
+export function TopCameraRig({ rooms, isDragging, interactionLocked, dimensionsVisible }: CameraModeRigProps) {
   const camera = useRef<THREE.OrthographicCamera>(null)
   const controls = useRef<ComponentRef<typeof MapControls>>(null)
   const cancelZoomTween = useRef<(() => void) | null>(null)
@@ -26,7 +27,8 @@ export function TopCameraRig({ rooms, isDragging, interactionLocked }: CameraMod
   const size = useThree((state) => state.size)
   const invalidate = useThree((state) => state.invalidate)
   const metrics = useMemo(() => getPlanCameraMetrics(rooms), [rooms])
-  const fitZoom = calculateTopCameraZoom(size.width, size.height, metrics.bounds)
+  const margin = dimensionsVisible ? PLAN_DIMENSION_MARGIN : 0
+  const fitZoom = calculateTopCameraZoom(size.width, size.height, metrics.bounds, margin)
   const cameraHeight = Math.max(16, metrics.maxHeight + 10)
   const minZoom = Math.max(1, fitZoom * 0.35)
   const maxZoom = Math.max(minZoom * 2, fitZoom * 6)
@@ -109,8 +111,13 @@ export function TopCameraRig({ rooms, isDragging, interactionLocked }: CameraMod
   const resizeView = useCallback(
     (previousViewport: ViewportSize, nextViewport: ViewportSize) => {
       if (!camera.current || !controls.current) return
-      const previousFit = calculateTopCameraZoom(previousViewport.width, previousViewport.height, metrics.bounds)
-      const nextFit = calculateTopCameraZoom(nextViewport.width, nextViewport.height, metrics.bounds)
+      const previousFit = calculateTopCameraZoom(
+        previousViewport.width,
+        previousViewport.height,
+        metrics.bounds,
+        margin,
+      )
+      const nextFit = calculateTopCameraZoom(nextViewport.width, nextViewport.height, metrics.bounds, margin)
       if (previousFit <= 0 || Math.abs(nextFit - previousFit) < CAMERA_EPSILON) return
 
       cancelZoomTween.current?.()
@@ -120,13 +127,13 @@ export function TopCameraRig({ rooms, isDragging, interactionLocked }: CameraMod
       updateZoomLabel()
       invalidate()
     },
-    [invalidate, metrics.bounds, updateZoomLabel],
+    [invalidate, margin, metrics.bounds, updateZoomLabel],
   )
 
   const needsMoreSpace = useCallback(
     (previous: PlanCameraMetrics, viewport: ViewportSize) =>
-      topViewNeedsMoreSpace(calculateTopCameraZoom(viewport.width, viewport.height, previous.bounds), fitZoom),
-    [fitZoom],
+      topViewNeedsMoreSpace(calculateTopCameraZoom(viewport.width, viewport.height, previous.bounds, margin), fitZoom),
+    [fitZoom, margin],
   )
 
   useCameraPlanReconciler({
@@ -138,6 +145,8 @@ export function TopCameraRig({ rooms, isDragging, interactionLocked }: CameraMod
     reconcile: reconcileView,
     needsMoreSpace,
   })
+
+  useEffect(updateZoomLabel, [updateZoomLabel])
 
   useEffect(() => () => cancelZoomTween.current?.(), [])
 

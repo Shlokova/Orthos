@@ -46,10 +46,27 @@
     color: var(--color-text-muted);
     font-size: var(--text-2xs);
   }
+  .plan-room-area {
+    margin-left: var(--space-1);
+    opacity: 0.75;
+    font-variant-numeric: tabular-nums;
+  }
   .plan-room-label.is-active {
     color: var(--color-text-accent);
     border-color: var(--state-selected-border);
     background: var(--color-surface-label);
+  }
+
+  .plan-dimension {
+    display: inline-block;
+    padding: 2px 5px;
+    border-radius: var(--radius-xs);
+    color: var(--color-text-muted);
+    background: var(--color-surface-label-soft);
+    font-size: var(--text-2xs);
+    font-variant-numeric: tabular-nums;
+    line-height: var(--line-height-none);
+    white-space: nowrap;
   }
 
   .drawing-measure {

@@ -9,6 +9,7 @@ import { useScreenToPlane } from '../../lib/interactions/useScreenToPlane'
 import { NativePolyline } from '../primitives/NativePolyline'
 import './RoomDrawingLayer.css'
 import { distanceBetween, formatMeters } from '@shared/lib'
+import { PLAN_ORDER } from '../../lib/geometry/planLayers'
 
 interface Props {
   draft: RoomDrawingDraft
@@ -32,7 +33,7 @@ function DrawingCapturePlane() {
     <mesh
       position={[0, DRAWING_CAPTURE_HEIGHT, 0]}
       rotation-x={-Math.PI / 2}
-      renderOrder={100}
+      renderOrder={PLAN_ORDER.drawing + 5}
       onPointerMove={(event: ThreeEvent<PointerEvent>) => {
         event.stopPropagation()
         const point = floorPointOf(event.nativeEvent)
@@ -56,6 +57,14 @@ export function RoomDrawingLayer({ draft }: Props) {
   const closeTargetActive = isRoomDrawingClosable(draft)
   const first = draft.vertices[0]
   const canClose = draft.vertices.length >= 3
+  const blocked = draft.blockedBy !== null
+  const magnetised = draft.magnet === 'vertex' || draft.magnet === 'wall'
+  const previewColor = blocked ? SCENE_THEME.palette.invalidUi : SCENE_THEME.palette.terracottaUi
+  const pointerColor = blocked
+    ? SCENE_THEME.palette.invalidUi
+    : magnetised
+      ? SCENE_THEME.palette.oliveUi
+      : SCENE_THEME.palette.terracottaUi
 
   const previewPoints = useMemo(() => {
     const points = draft.vertices.map((vertex) => [vertex.x, 0.19, vertex.z] as const)
@@ -102,12 +111,12 @@ export function RoomDrawingLayer({ draft }: Props) {
           ]}
           color={SCENE_THEME.palette.oliveUi}
           depthTest={false}
-          renderOrder={43}
+          renderOrder={PLAN_ORDER.drawing}
         />
       )}
 
       {previewPoints.length >= 2 && (
-        <NativePolyline points={previewPoints} color={SCENE_THEME.palette.terracottaUi} renderOrder={44} />
+        <NativePolyline points={previewPoints} color={previewColor} renderOrder={PLAN_ORDER.drawing + 1} />
       )}
 
       {segmentLabels.map((label) => (
@@ -124,28 +133,35 @@ export function RoomDrawingLayer({ draft }: Props) {
 
       {draft.pointer && !closeTargetActive && (
         <group position={[draft.pointer.x, 0.2, draft.pointer.z]}>
-          <mesh rotation-x={-Math.PI / 2} renderOrder={47}>
+          <mesh rotation-x={-Math.PI / 2} renderOrder={PLAN_ORDER.drawing + 4}>
             <circleGeometry args={[0.075, 20]} />
-            <meshBasicMaterial color={SCENE_THEME.palette.terracottaUi} depthTest={false} />
+            <meshBasicMaterial color={pointerColor} transparent depthTest={false} />
           </mesh>
-          <mesh rotation-x={-Math.PI / 2} renderOrder={46}>
+          <mesh rotation-x={-Math.PI / 2} renderOrder={PLAN_ORDER.drawing + 3}>
             <ringGeometry args={[0.1, 0.14, 24]} />
-            <meshBasicMaterial color={SCENE_THEME.palette.terracottaUi} transparent opacity={0.5} depthTest={false} />
+            <meshBasicMaterial color={pointerColor} transparent opacity={0.5} depthTest={false} />
           </mesh>
+          {magnetised && (
+            <mesh rotation-x={-Math.PI / 2} renderOrder={PLAN_ORDER.drawing + 3}>
+              <ringGeometry args={[0.19, 0.23, 28]} />
+              <meshBasicMaterial color={pointerColor} transparent opacity={0.8} depthTest={false} />
+            </mesh>
+          )}
         </group>
       )}
 
       {draft.vertices.map((vertex, index) => (
         <group key={index} position={[vertex.x, 0.21, vertex.z]}>
-          <mesh rotation-x={-Math.PI / 2} renderOrder={46}>
+          <mesh rotation-x={-Math.PI / 2} renderOrder={PLAN_ORDER.drawing + 3}>
             <circleGeometry args={[index === 0 ? 0.14 : 0.1, 24]} />
             <meshBasicMaterial
               color={index === 0 ? SCENE_THEME.palette.terracottaUi : SCENE_THEME.palette.oliveUi}
+              transparent
               depthTest={false}
             />
           </mesh>
           {index === 0 && canClose && (
-            <mesh position-y={-0.01} rotation-x={-Math.PI / 2} renderOrder={45}>
+            <mesh position-y={-0.01} rotation-x={-Math.PI / 2} renderOrder={PLAN_ORDER.drawing + 2}>
               <ringGeometry args={[0.18, closeTargetActive ? 0.3 : 0.24, 32]} />
               <meshBasicMaterial
                 color={SCENE_THEME.palette.terracottaUi}

@@ -1,5 +1,6 @@
 import {
   clampOpeningToWall,
+  collectRoomWallOpenings,
   type FurnitureItem,
   furnitureItemsIntersect3D,
   isItemInsideRoom,
@@ -188,11 +189,19 @@ export class OpeningRule implements PlacementRule {
   }
 }
 
+interface RoomWallOpenings {
+  roomsById: ReadonlyMap<string, RoomDefinition>
+  openingsByRoom: ReadonlyMap<string, readonly WallOpening[]>
+}
+
 export class OpeningObstructionRule implements PlacementRule {
   private previousItems: readonly FurnitureItem[] | null = null
   private previousRooms: readonly RoomDefinition[] | null = null
   private previousOpenings: readonly WallOpening[] | null = null
   private previousIssues: ValidationIssue[] = []
+  private layoutRooms: readonly RoomDefinition[] | null = null
+  private layoutOpenings: readonly WallOpening[] | null = null
+  private layout: RoomWallOpenings = { roomsById: new Map(), openingsByRoom: new Map() }
 
   validate(
     items: readonly FurnitureItem[],
@@ -203,13 +212,12 @@ export class OpeningObstructionRule implements PlacementRule {
       return this.previousIssues
     }
 
-    const roomsById = new Map(rooms.map((room) => [room.id, room]))
+    const { roomsById, openingsByRoom } = this.resolveLayout(rooms, openings)
     const issues: ValidationIssue[] = []
     for (const item of items) {
       const room = roomsById.get(item.roomId)
       if (!room) continue
-      for (const opening of openings) {
-        if (opening.roomId !== item.roomId) continue
+      for (const opening of openingsByRoom.get(item.roomId) ?? []) {
         if (!itemObstructsOpening(item, opening, room)) continue
         issues.push({
           type: 'opening-blocked',
@@ -224,6 +232,18 @@ export class OpeningObstructionRule implements PlacementRule {
     this.previousOpenings = openings
     this.previousIssues = issues
     return issues
+  }
+
+  private resolveLayout(rooms: readonly RoomDefinition[], openings: readonly WallOpening[]): RoomWallOpenings {
+    if (this.layoutRooms === rooms && this.layoutOpenings === openings) return this.layout
+
+    this.layout = {
+      roomsById: new Map(rooms.map((room) => [room.id, room])),
+      openingsByRoom: new Map(rooms.map((room) => [room.id, collectRoomWallOpenings(room, rooms, openings)])),
+    }
+    this.layoutRooms = rooms
+    this.layoutOpenings = openings
+    return this.layout
   }
 }
 

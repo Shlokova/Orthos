@@ -1,18 +1,28 @@
 import { Circle, DETAIL, Line, type PlanSymbolProps, Rect } from './primitives'
 
-export function WallSymbol({ item, color, width, depth, insetW, insetD, detailOrder, outlineOrder }: PlanSymbolProps) {
+export function WallSymbol({
+  item,
+  colors,
+  width,
+  depth,
+  insetW,
+  insetD,
+  fillOrder,
+  detailOrder,
+  outlineOrder,
+}: PlanSymbolProps) {
   if (item.kind === 'wall-clock') {
     return (
       <>
-        <Circle diameter={Math.min(width, depth * 2)} color={color} y={0.04} renderOrder={detailOrder} />
-        <Circle diameter={Math.min(width, depth * 2) * 0.5} color={DETAIL} y={0.045} renderOrder={outlineOrder} />
+        <Circle diameter={Math.min(width, depth * 2)} color={colors.primary} y={0.04} renderOrder={fillOrder} />
+        <Circle diameter={Math.min(width, depth * 2) * 0.5} color={DETAIL} y={0.045} renderOrder={detailOrder} />
       </>
     )
   }
 
   return (
     <>
-      <Rect width={width - insetW} depth={depth - insetD} color={color} y={0.04} renderOrder={detailOrder} />
+      <Rect width={width - insetW} depth={depth - insetD} color={colors.primary} y={0.04} renderOrder={fillOrder} />
       <Line
         points={[
           [-width / 2, 0, -depth / 2],

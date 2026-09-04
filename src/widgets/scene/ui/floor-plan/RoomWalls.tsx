@@ -1,9 +1,10 @@
 import {
+  buildWallBandQuads,
   buildWallPieces,
-  getSolidWallSpans,
   getWallSegments,
   polygonCentroid,
   type RoomDefinition,
+  type WallBandQuad,
   type WallOpening,
   type WallSegment,
 } from '@entities/scene'
@@ -12,10 +13,12 @@ import { Edges } from '@react-three/drei'
 import { useFrame, useThree } from '@react-three/fiber'
 import { SCENE_THEME } from '@shared/config/theme'
 import { shallowEqual } from '@shared/lib'
-import { useLayoutEffect, useMemo, useRef } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { WALL_THICKNESS } from '../../lib/geometry/constants'
+import { PLAN_ORDER } from '../../lib/geometry/planLayers'
 import { planAngleToSceneY } from '../../lib/geometry/sceneCoordinates'
+import { PlanStroke } from '../primitives/PlanStroke'
 import { OpeningVisual } from './OpeningVisual'
 
 const UNIT_BOX = new THREE.BoxGeometry(1, 1, 1)
@@ -39,14 +42,10 @@ const WALL_CAP_INACTIVE_MATERIAL = new THREE.MeshStandardMaterial({
   roughness: 0.82,
   metalness: 0,
 })
-const TOP_WALL_ACTIVE_MATERIAL = new THREE.MeshBasicMaterial({
-  color: SCENE_THEME.palette.inkSoft,
-  depthTest: false,
-  depthWrite: false,
-  toneMapped: false,
-})
-const TOP_WALL_INACTIVE_MATERIAL = new THREE.MeshBasicMaterial({
-  color: SCENE_THEME.palette.outlineInactive,
+const TOP_WALL_MATERIAL = new THREE.MeshBasicMaterial({
+  color: SCENE_THEME.palette.wallPlan,
+  side: THREE.DoubleSide,
+  transparent: true,
   depthTest: false,
   depthWrite: false,
   toneMapped: false,
@@ -107,7 +106,7 @@ function WallSegmentView({ room, wall, openings, wallDisplayMode, active }: Wall
           receiveShadow
           geometry={UNIT_BOX}
           material={active ? WALL_CAP_ACTIVE_MATERIAL : WALL_CAP_INACTIVE_MATERIAL}
-          position={[0, room.height - 0.045, 0]}
+          position={[0, room.height - 0.035, 0]}
           scale={[wall.length + 0.04, 0.09, WALL_THICKNESS * 1.22]}
           dispose={null}
         >
@@ -118,71 +117,69 @@ function WallSegmentView({ room, wall, openings, wallDisplayMode, active }: Wall
   )
 }
 
-function TopWall({ wall, openings, active }: { wall: WallSegment; openings: readonly WallOpening[]; active: boolean }) {
-  const intervals = useMemo(() => getSolidWallSpans(wall.length, openings), [openings, wall.length])
+function buildBandGeometry(quads: readonly WallBandQuad[]): THREE.BufferGeometry {
+  const positions: number[] = []
+  for (const quad of quads) {
+    const { outerStart, outerEnd, innerEnd, innerStart } = quad
+    positions.push(outerStart.x, 0, outerStart.z, outerEnd.x, 0, outerEnd.z, innerEnd.x, 0, innerEnd.z)
+    positions.push(outerStart.x, 0, outerStart.z, innerEnd.x, 0, innerEnd.z, innerStart.x, 0, innerStart.z)
+  }
+  const geometry = new THREE.BufferGeometry()
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
+  return geometry
+}
+
+function WallBandView({ room, openings }: { room: RoomDefinition; openings: readonly WallOpening[] }) {
+  const quads = useMemo(() => buildWallBandQuads(room, openings, WALL_THICKNESS), [room, openings])
+  const geometry = useMemo(() => buildBandGeometry(quads), [quads])
+  useEffect(() => () => geometry.dispose(), [geometry])
+
   return (
-    <group position={[wall.center.x, 0, wall.center.z]} rotation-y={planAngleToSceneY(wall.angle)}>
-      {intervals.map((interval) => {
-        const width = interval.end - interval.start
-        return (
-          <mesh
-            key={`${interval.start}:${interval.end}`}
-            geometry={UNIT_BOX}
-            material={active ? TOP_WALL_ACTIVE_MATERIAL : TOP_WALL_INACTIVE_MATERIAL}
-            position={[interval.start + width / 2 - wall.length / 2, 0.055, 0]}
-            scale={[width, 0.055, WALL_THICKNESS * 1.12]}
-            renderOrder={30}
-            dispose={null}
-          />
-        )
-      })}
+    <group>
+      <mesh
+        geometry={geometry}
+        material={TOP_WALL_MATERIAL}
+        position={[0, 0.055, 0]}
+        renderOrder={PLAN_ORDER.wallBand}
+        dispose={null}
+      />
+      {quads.map((quad, index) => (
+        <PlanStroke
+          key={`${quad.wallIndex}:${index}`}
+          points={[
+            [quad.outerStart.x, 0.056, quad.outerStart.z],
+            [quad.outerEnd.x, 0.056, quad.outerEnd.z],
+            [quad.innerEnd.x, 0.056, quad.innerEnd.z],
+            [quad.innerStart.x, 0.056, quad.innerStart.z],
+          ]}
+          closed
+          color={SCENE_THEME.palette.wallPlanEdge}
+          width={SCENE_THEME.plan.stroke.wall}
+          renderOrder={PLAN_ORDER.wallBand + 1}
+        />
+      ))}
     </group>
   )
 }
 
-interface RoomWallsProps {
+interface VolumeWallsProps {
   room: RoomDefinition
-  openings: WallOpening[]
-  viewMode: ViewMode
+  wallOpenings: readonly WallOpening[]
   wallDisplayMode: WallDisplayMode
   active: boolean
 }
 
-export function RoomWalls({ room, openings, viewMode, wallDisplayMode, active }: RoomWallsProps) {
-  const { selectedOpeningId, invalidIds } = useEditorSelector(
-    (state) => ({ selectedOpeningId: state.selectedOpeningId, invalidIds: state.invalidIds }),
-    shallowEqual,
-  )
+function VolumeWalls({ room, wallOpenings, wallDisplayMode, active }: VolumeWallsProps) {
   const walls = useMemo(() => getWallSegments(room), [room])
   const openingsByWall = useMemo(() => {
     const map = new Map<number, WallOpening[]>()
-    for (const opening of openings) {
+    for (const opening of wallOpenings) {
       const current = map.get(opening.wallIndex)
       if (current) current.push(opening)
       else map.set(opening.wallIndex, [opening])
     }
     return map
-  }, [openings])
-
-  if (viewMode === 'top') {
-    return (
-      <>
-        {walls.map((wall) => (
-          <TopWall key={wall.index} wall={wall} openings={openingsByWall.get(wall.index) ?? []} active={active} />
-        ))}
-        {openings.map((opening) => (
-          <OpeningVisual
-            key={opening.id}
-            opening={opening}
-            room={room}
-            selected={selectedOpeningId === opening.id}
-            invalid={invalidIds.has(opening.id)}
-            viewMode="top"
-          />
-        ))}
-      </>
-    )
-  }
+  }, [wallOpenings])
 
   return (
     <>
@@ -196,14 +193,40 @@ export function RoomWalls({ room, openings, viewMode, wallDisplayMode, active }:
           active={active}
         />
       ))}
-      {openings.map((opening) => (
+    </>
+  )
+}
+
+interface RoomWallsProps {
+  room: RoomDefinition
+  ownOpenings: readonly WallOpening[]
+  wallOpenings: readonly WallOpening[]
+  viewMode: ViewMode
+  wallDisplayMode: WallDisplayMode
+  active: boolean
+}
+
+export function RoomWalls({ room, ownOpenings, wallOpenings, viewMode, wallDisplayMode, active }: RoomWallsProps) {
+  const { selectedOpeningId, invalidIds } = useEditorSelector(
+    (state) => ({ selectedOpeningId: state.selectedOpeningId, invalidIds: state.invalidIds }),
+    shallowEqual,
+  )
+
+  return (
+    <>
+      {viewMode === 'top' ? (
+        <WallBandView room={room} openings={wallOpenings} />
+      ) : (
+        <VolumeWalls room={room} wallOpenings={wallOpenings} wallDisplayMode={wallDisplayMode} active={active} />
+      )}
+      {ownOpenings.map((opening) => (
         <OpeningVisual
           key={opening.id}
           opening={opening}
           room={room}
           selected={selectedOpeningId === opening.id}
           invalid={invalidIds.has(opening.id)}
-          viewMode="perspective"
+          viewMode={viewMode}
         />
       ))}
     </>
@@ -217,7 +240,6 @@ if (import.meta.hot) {
     WALL_INACTIVE_MATERIAL.dispose()
     WALL_CAP_ACTIVE_MATERIAL.dispose()
     WALL_CAP_INACTIVE_MATERIAL.dispose()
-    TOP_WALL_ACTIVE_MATERIAL.dispose()
-    TOP_WALL_INACTIVE_MATERIAL.dispose()
+    TOP_WALL_MATERIAL.dispose()
   })
 }

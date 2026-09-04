@@ -1,6 +1,16 @@
-import { MAX_ROOM_VERTICES, MIN_ROOM_EDGE, segmentsIntersect, type Vec2 } from '@entities/scene'
+import {
+  findRoomContainingPoint,
+  findRoomCrossedBySegment,
+  findRoomMagnet,
+  findRoomOverlappingPolygon,
+  MAX_ROOM_VERTICES,
+  MIN_ROOM_EDGE,
+  type RoomDefinition,
+  segmentsIntersect,
+  type Vec2,
+} from '@entities/scene'
 import { distanceBetween, formatMeters, GEOMETRY_EPSILON, snap } from '@shared/lib'
-import type { RoomDrawingDraft } from '../EditorState'
+import type { RoomDrawingDraft, RoomDrawingMagnet } from '../EditorState'
 
 const DRAWING_GRID_STEP = 0.05
 const AXIS_LOCK_DISTANCE = DRAWING_GRID_STEP
@@ -12,8 +22,15 @@ interface RoomDrawingUpdate {
   notice: string
 }
 
+interface DrawingCandidate {
+  point: Vec2
+  magnet: RoomDrawingMagnet
+  closing: boolean
+  blockedBy: string | null
+}
+
 export function createRoomDrawingDraft(): RoomDrawingDraft {
-  return { vertices: [], pointer: null }
+  return { vertices: [], pointer: null, magnet: 'none', blockedBy: null }
 }
 
 function alignToAnchor(value: number, anchors: readonly number[]): number | undefined {
@@ -62,20 +79,72 @@ function pointsEqual(first: Vec2 | null, second: Vec2 | null): boolean {
   )
 }
 
-export function previewRoomDrawing(draft: RoomDrawingDraft, point: Vec2): RoomDrawingDraft {
+function isClosable(vertices: readonly Vec2[], point: Vec2): boolean {
+  const first = vertices[0]
+  return Boolean(first && vertices.length >= 3 && distanceBetween(point, first) <= CLOSE_DISTANCE)
+}
+
+export function isRoomDrawingClosable(draft: RoomDrawingDraft, point = draft.pointer): boolean {
+  return Boolean(point && isClosable(draft.vertices, point))
+}
+
+function blockingRoom(vertices: readonly Vec2[], point: Vec2, closing: boolean, rooms: readonly RoomDefinition[]) {
+  if (rooms.length === 0) return null
+
+  if (closing) return findRoomOverlappingPolygon(vertices, rooms)
+
+  const inside = findRoomContainingPoint(rooms, point)
+  if (inside) return inside
+
+  const previous = vertices.at(-1)
+  return previous ? findRoomCrossedBySegment(rooms, previous, point) : null
+}
+
+function resolveCandidate(draft: RoomDrawingDraft, point: Vec2, rooms: readonly RoomDefinition[]): DrawingCandidate {
+  const first = draft.vertices[0]
+  const magnetised = findRoomMagnet(rooms, point)
+  const raw = magnetised ? magnetised.point : snapRoomDrawingPoint(point, draft.vertices)
+
+  if (first && isClosable(draft.vertices, raw)) {
+    return {
+      point: first,
+      magnet: 'close',
+      closing: true,
+      blockedBy: blockingRoom(draft.vertices, first, true, rooms)?.name ?? null,
+    }
+  }
+
+  return {
+    point: raw,
+    magnet: magnetised ? magnetised.kind : 'none',
+    closing: false,
+    blockedBy: blockingRoom(draft.vertices, raw, false, rooms)?.name ?? null,
+  }
+}
+
+function withCandidate(draft: RoomDrawingDraft, candidate: DrawingCandidate): RoomDrawingDraft {
+  if (
+    pointsEqual(draft.pointer, candidate.point) &&
+    draft.magnet === candidate.magnet &&
+    draft.blockedBy === candidate.blockedBy
+  ) {
+    return draft
+  }
+  return { ...draft, pointer: candidate.point, magnet: candidate.magnet, blockedBy: candidate.blockedBy }
+}
+
+export function previewRoomDrawing(
+  draft: RoomDrawingDraft,
+  point: Vec2,
+  rooms: readonly RoomDefinition[],
+): RoomDrawingDraft {
   if (!Number.isFinite(point.x) || !Number.isFinite(point.z)) return draft
-  const pointer = snapRoomDrawingPoint(point, draft.vertices)
-  return pointsEqual(pointer, draft.pointer) ? draft : { ...draft, pointer }
+  return withCandidate(draft, resolveCandidate(draft, point, rooms))
 }
 
 export function undoRoomDrawingPoint(draft: RoomDrawingDraft): RoomDrawingDraft {
   const vertices = draft.vertices.slice(0, -1)
-  return { vertices, pointer: vertices.at(-1) ?? null }
-}
-
-export function isRoomDrawingClosable(draft: RoomDrawingDraft, point = draft.pointer): boolean {
-  const first = draft.vertices[0]
-  return Boolean(first && point && draft.vertices.length >= 3 && distanceBetween(point, first) <= CLOSE_DISTANCE)
+  return { ...draft, vertices, pointer: vertices.at(-1) ?? null, magnet: 'none', blockedBy: null }
 }
 
 function newWallCrossesExisting(vertices: readonly Vec2[], end: Vec2, closing: boolean): boolean {
@@ -96,63 +165,70 @@ function isDuplicateCorner(vertices: readonly Vec2[], point: Vec2): boolean {
   return vertices.some((vertex) => distanceBetween(vertex, point) < DRAWING_GRID_STEP)
 }
 
-export function addRoomDrawingPoint(draft: RoomDrawingDraft, point: Vec2): RoomDrawingUpdate {
+export function addRoomDrawingPoint(
+  draft: RoomDrawingDraft,
+  point: Vec2,
+  rooms: readonly RoomDefinition[],
+): RoomDrawingUpdate {
   if (!Number.isFinite(point.x) || !Number.isFinite(point.z)) {
     return { draft, shouldFinish: false, notice: 'Could not place that corner. Try again inside the plan.' }
   }
 
-  const snapped = snapRoomDrawingPoint(point, draft.vertices)
-  const closing = isRoomDrawingClosable(draft, snapped)
-  const first = draft.vertices[0]
-  const target = closing && first ? first : snapped
+  const candidate = resolveCandidate(draft, point, rooms)
+  const target = candidate.point
   const previous = draft.vertices.at(-1)
+
+  if (candidate.blockedBy) {
+    return {
+      draft: withCandidate(draft, candidate),
+      shouldFinish: false,
+      notice: candidate.closing
+        ? `Closing here would overlap ${candidate.blockedBy}. Rooms may share a wall, but cannot intersect.`
+        : `That corner runs through ${candidate.blockedBy}. Rooms may share a wall, but cannot intersect.`,
+    }
+  }
 
   if (previous && distanceBetween(previous, target) < MIN_ROOM_EDGE) {
     return {
-      draft,
+      draft: withCandidate(draft, candidate),
       shouldFinish: false,
       notice: `Walls must be at least ${formatMeters(MIN_ROOM_EDGE)} long.`,
     }
   }
 
-  if (!closing && isDuplicateCorner(draft.vertices, target)) {
+  if (!candidate.closing && isDuplicateCorner(draft.vertices, target)) {
     return {
-      draft,
+      draft: withCandidate(draft, candidate),
       shouldFinish: false,
       notice: 'That corner already exists. Close on the first point or choose another position.',
     }
   }
 
-  if (newWallCrossesExisting(draft.vertices, target, closing)) {
+  if (newWallCrossesExisting(draft.vertices, target, candidate.closing)) {
     return {
-      draft: pointsEqual(draft.pointer, target) ? draft : { ...draft, pointer: target },
+      draft: withCandidate(draft, candidate),
       shouldFinish: false,
       notice: 'Walls cannot cross. Undo the last corner or choose another point.',
     }
   }
 
-  if (closing) {
-    return {
-      draft: first && pointsEqual(draft.pointer, first) ? draft : { ...draft, pointer: first ?? snapped },
-      shouldFinish: true,
-      notice: 'Room outline closed.',
-    }
+  if (candidate.closing) {
+    return { draft: withCandidate(draft, candidate), shouldFinish: true, notice: 'Room outline closed.' }
   }
 
   if (draft.vertices.length >= MAX_ROOM_VERTICES) {
     return {
-      draft,
+      draft: withCandidate(draft, candidate),
       shouldFinish: false,
       notice: `A room can have at most ${MAX_ROOM_VERTICES} corners. Finish or undo a corner.`,
     }
   }
 
-  const vertices = [...draft.vertices, snapped]
   return {
-    draft: { vertices, pointer: snapped },
+    draft: { ...draft, vertices: [...draft.vertices, target], pointer: target, blockedBy: null },
     shouldFinish: false,
     notice:
-      vertices.length < 3
+      draft.vertices.length + 1 < 3
         ? 'Continue drawing the room perimeter.'
         : 'Click the first corner or press Finish to create the room.',
   }

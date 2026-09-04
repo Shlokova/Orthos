@@ -6,6 +6,7 @@ export interface CameraRigProps {
   viewMode: ViewMode
   isDragging: boolean
   interactionLocked: boolean
+  dimensionsVisible: boolean
 }
 
 export type CameraModeRigProps = Omit<CameraRigProps, 'viewMode'>

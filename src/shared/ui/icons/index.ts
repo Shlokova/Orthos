@@ -4,6 +4,7 @@ export {
   CloseIcon,
   CornerEditIcon,
   CursorIcon,
+  DimensionsIcon,
   DownloadIcon,
   DrawRoomIcon,
   FitIcon,

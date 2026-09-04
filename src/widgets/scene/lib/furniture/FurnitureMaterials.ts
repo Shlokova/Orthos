@@ -18,6 +18,21 @@ export interface FurnitureMaterials {
   lampShade: THREE.MeshStandardMaterial
 }
 
+export interface FurnitureColors {
+  primary: string
+  secondary: string
+  cream: string
+  dark: string
+  green: string
+  greenLight: string
+  metal: string
+  glass: string
+  fabric: string
+  accent: string
+  white: string
+  lampShade: string
+}
+
 function deriveColor(base: string, target: string, amount: number): string {
   return `#${new THREE.Color(base).lerp(new THREE.Color(target), amount).getHexString()}`
 }
@@ -70,6 +85,21 @@ const COMMON_MATERIALS = {
   'cream' | 'green' | 'greenLight' | 'metal' | 'glass' | 'fabric' | 'accent' | 'white' | 'lampShade'
 >
 
+const COMMON_COLORS = {
+  cream: SCENE_THEME.palette.cream,
+  green: SCENE_THEME.palette.olive,
+  greenLight: SCENE_THEME.palette.oliveLight,
+  metal: SCENE_THEME.palette.metal,
+  glass: SCENE_THEME.palette.glass,
+  fabric: SCENE_THEME.palette.fabric,
+  accent: SCENE_THEME.palette.terracotta,
+  white: SCENE_THEME.palette.paper,
+  lampShade: SCENE_THEME.palette.lightWarm,
+} satisfies Pick<
+  FurnitureColors,
+  'cream' | 'green' | 'greenLight' | 'metal' | 'glass' | 'fabric' | 'accent' | 'white' | 'lampShade'
+>
+
 export function useFurnitureMaterials(item: FurnitureItem): FurnitureMaterials {
   const { color, kind } = item
   const dynamicMaterials = useMemo(() => {
@@ -89,6 +119,20 @@ export function useFurnitureMaterials(item: FurnitureItem): FurnitureMaterials {
   )
 
   return { ...COMMON_MATERIALS, ...dynamicMaterials }
+}
+
+export function useFurnitureColors(item: FurnitureItem): FurnitureColors {
+  const { color, kind } = item
+  const dynamicColors = useMemo(() => {
+    const base = resolveFurnitureColor({ color, kind })
+    return {
+      primary: base,
+      secondary: deriveColor(base, SCENE_THEME.palette.creamLight, 0.34),
+      dark: deriveColor(base, SCENE_THEME.palette.ink, 0.58),
+    }
+  }, [color, kind])
+
+  return { ...COMMON_COLORS, ...dynamicColors }
 }
 
 if (import.meta.hot) {

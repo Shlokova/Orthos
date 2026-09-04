@@ -25,7 +25,12 @@ export function createRoomDrawingActions({ store, idGenerator }: EditorActionCon
     }
 
     store.replaceScene(result.scene, 'commit')
-    store.patch({ activeRoomId: roomId, roomDrawing: null, selection: { type: 'room', id: roomId } })
+    store.patch({
+      activeRoomId: roomId,
+      roomDrawing: null,
+      roomEditTool: 'transform',
+      selection: { type: 'room', id: roomId },
+    })
     store.notify('Room created.')
   }
 
@@ -38,13 +43,13 @@ export function createRoomDrawingActions({ store, idGenerator }: EditorActionCon
     previewRoomDrawing(point: Vec2): void {
       const draft = store.state.roomDrawing
       if (!draft) return
-      store.patch({ roomDrawing: previewDraftPointer(draft, point) })
+      store.patch({ roomDrawing: previewDraftPointer(draft, point, store.state.scene.rooms) })
     },
 
     addRoomDrawingPoint(point: Vec2): void {
       const draft = store.state.roomDrawing
       if (!draft) return
-      const update = addPointToDraft(draft, point)
+      const update = addPointToDraft(draft, point, store.state.scene.rooms)
       if (update.shouldFinish) {
         finishRoomDrawing()
         return
@@ -65,7 +70,7 @@ export function createRoomDrawingActions({ store, idGenerator }: EditorActionCon
 
     cancelRoomDrawing(): void {
       if (!store.state.roomDrawing) return
-      store.patch({ roomDrawing: null })
+      store.patch({ roomDrawing: null, roomEditTool: 'transform' })
       store.notify('Room drawing cancelled.')
     },
   }

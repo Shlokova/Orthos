@@ -5,6 +5,7 @@ import {
   type FurnitureFactory,
   type FurnitureItem,
   type FurnitureKind,
+  findRoomContainingItem,
   furnitureItemsIntersect3D,
   getCatalogItem,
   getItemAnchorStrategy,
@@ -149,6 +150,21 @@ export function addItem(
   }
 }
 
+function candidateRooms(
+  scene: SceneState,
+  item: FurnitureItem,
+  desired: FurnitureItem,
+  roomWasChosen: boolean,
+): RoomDefinition[] {
+  const assigned = roomForItem(scene, desired)
+  if (roomWasChosen) return assigned ? [assigned] : []
+
+  const current = roomForItem(scene, item)
+  const entered = findRoomContainingItem(desired, scene.rooms)
+  const ordered = entered && entered.id !== current?.id ? [entered, current] : [current]
+  return ordered.filter((room): room is RoomDefinition => room !== null)
+}
+
 export function patchItem(scene: SceneState, id: string, patch: Partial<FurnitureItem>): SceneState {
   const index = scene.items.findIndex((item) => item.id === id)
   if (index < 0) return scene
@@ -177,21 +193,24 @@ export function patchItem(scene: SceneState, id: string, patch: Partial<Furnitur
     rotation: normalizeAngle(patch.rotation ?? item.rotation),
   }
 
-  const room = roomForItem(scene, desired)
-  if (!room) return scene
+  for (const room of candidateRooms(scene, item, desired, patch.roomId !== undefined)) {
+    const sameRoom = room.id === item.roomId
+    const candidate = sameRoom ? desired : { ...desired, roomId: room.id }
+    const placed = anchorItem(
+      scene,
+      candidate,
+      room,
+      'nearest',
+      sameRoom && anchorsToWall(item) ? getItemWallIndex(item, room) : undefined,
+    )
+    if (!placed || !itemFitsRoomAt(placed, room)) continue
 
-  const placed = anchorItem(
-    scene,
-    desired,
-    room,
-    'nearest',
-    anchorsToWall(item) ? getItemWallIndex(item, room) : undefined,
-  )
-  if (!placed || !itemFitsRoomAt(placed, room)) return scene
+    const items = carrySupportedItems(scene.items, item, placed).slice()
+    items[index] = placed
+    return settleSurfaceItems({ ...scene, items })
+  }
 
-  const items = carrySupportedItems(scene.items, item, placed).slice()
-  items[index] = placed
-  return settleSurfaceItems({ ...scene, items })
+  return scene
 }
 
 export function removeItem(scene: SceneState, id: string): SceneState {

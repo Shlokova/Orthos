@@ -1,11 +1,13 @@
-import { findInteriorPointNear, polygonCentroid, type RoomDefinition } from '@entities/scene'
+import { findInteriorPointNear, polygonCentroid, type RoomDefinition, roomArea } from '@entities/scene'
 import { useEditorActions, useEditorSelector, type ViewMode } from '@features/editor'
 import { useViewportInteraction } from '@features/viewport'
 import { Html } from '@react-three/drei'
 import type { ThreeEvent } from '@react-three/fiber'
 import { SCENE_THEME } from '@shared/config/theme'
+import { formatArea } from '@shared/lib'
 import { useEffect, useMemo } from 'react'
 import * as THREE from 'three'
+import { PLAN_ORDER } from '../../lib/geometry/planLayers'
 import { NativePolyline } from '../primitives/NativePolyline'
 
 function makeShapeGeometry(room: RoomDefinition): THREE.ShapeGeometry {
@@ -39,7 +41,7 @@ export function PolygonFloor({ room, active, viewMode }: PolygonFloorProps) {
         receiveShadow={viewMode === 'perspective'}
         rotation-x={-Math.PI / 2}
         geometry={geometry}
-        renderOrder={0}
+        renderOrder={viewMode === 'top' ? PLAN_ORDER.floor : 0}
         onPointerDown={(event: ThreeEvent<PointerEvent>) => {
           if (interactionTool === 'pan') return
           event.stopPropagation()
@@ -50,6 +52,7 @@ export function PolygonFloor({ room, active, viewMode }: PolygonFloorProps) {
           <meshBasicMaterial
             color={active ? SCENE_THEME.palette.floorActive : SCENE_THEME.palette.floorInactive}
             side={THREE.DoubleSide}
+            transparent
           />
         ) : (
           <meshStandardMaterial
@@ -60,17 +63,19 @@ export function PolygonFloor({ room, active, viewMode }: PolygonFloorProps) {
           />
         )}
       </mesh>
-      <NativePolyline
-        points={outline}
-        closed
-        color={active ? SCENE_THEME.palette.olivePlan : SCENE_THEME.palette.outlineInactive}
-        depthTest={viewMode !== 'top'}
-        renderOrder={viewMode === 'top' ? 29 : 10}
-      />
+      {viewMode !== 'top' && (
+        <NativePolyline
+          points={outline}
+          closed
+          color={active ? SCENE_THEME.palette.olivePlan : SCENE_THEME.palette.outlineInactive}
+          renderOrder={10}
+        />
+      )}
       {!isDragging && (
         <Html center transform={false} position={[center.x, 0.08, center.z]} style={{ pointerEvents: 'none' }}>
           <div className={`room-label ${viewMode === 'top' ? 'plan-room-label' : ''} ${active ? 'is-active' : ''}`}>
             {room.name}
+            {viewMode === 'top' && <span className="plan-room-area">{formatArea(roomArea(room))}</span>}
           </div>
         </Html>
       )}

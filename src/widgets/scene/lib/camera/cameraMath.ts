@@ -1,9 +1,13 @@
 import type { Bounds2D, RoomDefinition } from '@entities/scene'
 import { getPlanBounds } from '@entities/scene'
+import { SCENE_THEME } from '@shared/config/theme'
 import { clamp } from '@shared/lib'
 
 const TOP_CAMERA_PADDING = 1.12
 const MIN_TOP_CAMERA_ZOOM = 2
+
+export const PLAN_DIMENSION_MARGIN =
+  SCENE_THEME.plan.dimension.offset + SCENE_THEME.plan.dimension.extension + SCENE_THEME.plan.dimension.gutter
 
 const METRIC_EPSILON = 1e-4
 const SIGNATURE_PRECISION = 1_000
@@ -80,12 +84,13 @@ export function calculateTopCameraZoom(
   viewportWidth: number,
   viewportHeight: number,
   extent: { width: number; depth: number },
+  margin = 0,
   padding = TOP_CAMERA_PADDING,
 ): number {
   const safeWidth = Math.max(1, viewportWidth)
   const safeHeight = Math.max(1, viewportHeight)
-  const paddedWidth = Math.max(0.25, extent.width * padding)
-  const paddedDepth = Math.max(0.25, extent.depth * padding)
+  const paddedWidth = Math.max(0.25, extent.width * padding + margin * 2)
+  const paddedDepth = Math.max(0.25, extent.depth * padding + margin * 2)
   return Math.max(MIN_TOP_CAMERA_ZOOM, Math.min(safeWidth / paddedWidth, safeHeight / paddedDepth))
 }
 

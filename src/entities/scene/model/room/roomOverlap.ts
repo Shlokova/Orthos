@@ -45,3 +45,10 @@ function roomsOverlap(first: RoomDefinition, second: RoomDefinition): boolean {
 export function findOverlappingRoom(room: RoomDefinition, rooms: readonly RoomDefinition[]): RoomDefinition | null {
   return rooms.find((candidate) => candidate.id !== room.id && roomsOverlap(room, candidate)) ?? null
 }
+
+export function findRoomOverlappingPolygon(
+  vertices: readonly Vec2[],
+  rooms: readonly RoomDefinition[],
+): RoomDefinition | null {
+  return rooms.find((candidate) => polygonsOverlap(vertices, candidate.vertices)) ?? null
+}

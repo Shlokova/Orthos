@@ -6,6 +6,7 @@ import {
   ClearanceIcon,
   CornerEditIcon,
   CursorIcon,
+  DimensionsIcon,
   FitIcon,
   HandIcon,
   MinusIcon,
@@ -19,19 +20,21 @@ import { useMemo } from 'react'
 import './SceneBottomBar.css'
 
 export function SceneBottomBar() {
-  const { selection, roomEditTool, viewMode, roomDrawing, heatmapVisible, room, items } = useEditorSelector(
-    (state) => ({
-      selection: state.selection,
-      roomEditTool: state.roomEditTool,
-      viewMode: state.viewMode,
-      roomDrawing: state.roomDrawing,
-      heatmapVisible: state.heatmapVisible,
-      room: state.room,
-      items: state.items,
-    }),
-    shallowEqual,
-  )
-  const { setRoomEditTool, rotateSelection, setHeatmapVisible } = useEditorActions()
+  const { selection, roomEditTool, viewMode, roomDrawing, heatmapVisible, dimensionsVisible, room, items } =
+    useEditorSelector(
+      (state) => ({
+        selection: state.selection,
+        roomEditTool: state.roomEditTool,
+        viewMode: state.viewMode,
+        roomDrawing: state.roomDrawing,
+        heatmapVisible: state.heatmapVisible,
+        dimensionsVisible: state.dimensionsVisible,
+        room: state.room,
+        items: state.items,
+      }),
+      shallowEqual,
+    )
+  const { setRoomEditTool, rotateSelection, setHeatmapVisible, setDimensionsVisible } = useEditorActions()
   const clearanceIssues = useMemo(() => analyzeClearance(room, items).issues.length, [items, room])
   const { interactionTool, setInteractionTool, zoomPercent, zoomIn, zoomOut, fit } = useViewportControls()
 
@@ -114,6 +117,18 @@ export function SceneBottomBar() {
         )}
 
         <span className="scene-toolbar-separator" aria-hidden="true" />
+        {topView && (
+          <button
+            type="button"
+            className={dimensionsVisible ? 'is-active' : ''}
+            aria-pressed={dimensionsVisible}
+            onClick={() => setDimensionsVisible(!dimensionsVisible)}
+            aria-label="Wall dimensions"
+            title="Wall dimensions of the active room"
+          >
+            <DimensionsIcon />
+          </button>
+        )}
         <button
           type="button"
           className={heatmapVisible ? 'is-active' : ''}

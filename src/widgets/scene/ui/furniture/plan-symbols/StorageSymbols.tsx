@@ -2,25 +2,20 @@ import { Line, type PlanSymbolProps, Rect } from './primitives'
 
 export function StorageSymbol({
   item,
-  color,
+  colors,
   width,
   depth,
   insetW,
   insetD,
-  detailOrder,
+  fillOrder,
   outlineOrder,
 }: PlanSymbolProps) {
+  const front = depth / 2
+
   return (
     <>
-      <Rect width={width - insetW} depth={depth - insetD} color={color} y={0.04} renderOrder={detailOrder} />
-      <Line
-        points={[
-          [0, 0, -depth / 2 + insetD],
-          [0, 0, depth / 2 - insetD],
-        ]}
-        renderOrder={outlineOrder}
-      />
-      {item.kind === 'bookshelf' &&
+      <Rect width={width - insetW} depth={depth - insetD} color={colors.primary} y={0.04} renderOrder={fillOrder} />
+      {item.kind === 'bookshelf' ? (
         [-0.22, 0.05, 0.28].map((z) => (
           <Line
             key={z}
@@ -30,7 +25,16 @@ export function StorageSymbol({
             ]}
             renderOrder={outlineOrder}
           />
-        ))}
+        ))
+      ) : (
+        <Line
+          points={[
+            [0, 0, -depth / 2 + insetD],
+            [0, 0, front],
+          ]}
+          renderOrder={outlineOrder}
+        />
+      )}
     </>
   )
 }

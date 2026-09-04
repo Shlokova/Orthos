@@ -10,6 +10,7 @@ import { useThree } from '@react-three/fiber'
 import { SCENE_THEME } from '@shared/config/theme'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
+import { PLAN_ORDER } from '../../lib/geometry/planLayers'
 import { planAngleToSceneY } from '../../lib/geometry/sceneCoordinates'
 
 interface Props {
@@ -125,7 +126,7 @@ function RoomClearanceOverlay({
         geometry={maskGeometry}
         rotation-x={-Math.PI / 2}
         position-y={0.012}
-        renderOrder={5}
+        renderOrder={PLAN_ORDER.clearance}
         raycast={ignoreRaycast}
       >
         <meshBasicMaterial
@@ -146,7 +147,7 @@ function RoomClearanceOverlay({
         y={0.026}
         color={SCENE_THEME.palette.clearanceMargin}
         opacity={0.24}
-        renderOrder={6}
+        renderOrder={PLAN_ORDER.clearance + 1}
         stencilRef={stencilRef}
         occluded={occluded}
       />
@@ -156,7 +157,7 @@ function RoomClearanceOverlay({
         y={0.028}
         color={SCENE_THEME.palette.invalidUi}
         opacity={0.32}
-        renderOrder={7}
+        renderOrder={PLAN_ORDER.clearance + 2}
         stencilRef={stencilRef}
         occluded={occluded}
       />

@@ -52,9 +52,9 @@ export function carrySupportedItems(
   const dx = after.position.x - before.position.x
   const dz = after.position.z - before.position.z
   const spin = after.rotation - before.rotation
-  if (Math.abs(dx) < GEOMETRY_EPSILON && Math.abs(dz) < GEOMETRY_EPSILON && Math.abs(spin) < GEOMETRY_EPSILON) {
-    return items
-  }
+  const moved =
+    Math.abs(dx) >= GEOMETRY_EPSILON || Math.abs(dz) >= GEOMETRY_EPSILON || Math.abs(spin) >= GEOMETRY_EPSILON
+  if (!moved && before.roomId === after.roomId) return items
 
   const carried = findCarriedItems(before, items)
   if (carried.length === 0) return items
@@ -66,6 +66,7 @@ export function carrySupportedItems(
     const spun = rotatePoint(local, spin)
     return {
       ...item,
+      roomId: after.roomId,
       position: { x: after.position.x + spun.x, z: after.position.z + spun.z },
       rotation: normalizeAngle(item.rotation + spin),
     }

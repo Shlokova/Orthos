@@ -2,9 +2,8 @@ import { getCatalogItem } from '@entities/scene'
 import { GEOMETRY_EPSILON, rotatePoint } from '@shared/lib'
 import { orientedRectanglesIntersect } from '../furniture/collision'
 import type { FurnitureItem, RoomDefinition, Vec2, WallOpening } from '../types'
-import { polygonSignedArea } from './polygon'
 import { openingSpan } from './wallPieces'
-import { getWallSegment } from './walls'
+import { getWallSegment, wallInwardNormal } from './walls'
 
 const OPENING_DEPTH = 0.24
 const DOOR_SWING_SLACK = 0.02
@@ -17,18 +16,12 @@ interface ObstructionZone {
   maxY: number
 }
 
-function wallInteriorNormal(room: RoomDefinition, wallIndex: number): Vec2 {
-  const wall = getWallSegment(room, wallIndex)
-  const normal = rotatePoint({ x: 0, z: 1 }, wall.angle)
-  return polygonSignedArea(room.vertices) < 0 ? { x: -normal.x, z: -normal.z } : normal
-}
-
 export function getOpeningZones(opening: WallOpening, room: RoomDefinition): ObstructionZone[] {
   const wall = getWallSegment(room, opening.wallIndex)
   const span = openingSpan(opening, wall.length)
   const centreDistance = (span.start + span.end) / 2
   const ratio = centreDistance / Math.max(wall.length, GEOMETRY_EPSILON)
-  const normal = wallInteriorNormal(room, opening.wallIndex)
+  const normal = wallInwardNormal(room, opening.wallIndex)
   const onWall: Vec2 = {
     x: wall.start.x + (wall.end.x - wall.start.x) * ratio,
     z: wall.start.z + (wall.end.z - wall.start.z) * ratio,

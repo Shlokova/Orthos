@@ -48,6 +48,15 @@ export function ClearanceIcon(props: IconProps) {
   )
 }
 
+export function DimensionsIcon(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="M3 8v8M21 8v8M3 12h18" />
+      <path d="m6 9-3 3 3 3M18 9l3 3-3 3" />
+    </IconBase>
+  )
+}
+
 export function WallNoneIcon(props: IconProps) {
   return (
     <IconBase {...props}>

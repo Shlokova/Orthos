@@ -10,7 +10,7 @@ export function createProjectActions({ store, codec, defaultScene }: EditorActio
       activeRoomId: activeRoom.id,
       selection: { type: 'room', id: activeRoom.id },
       roomDrawing: null,
-      heatmapVisible: false,
+      roomEditTool: 'transform',
     })
   }
 
