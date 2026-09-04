@@ -1,14 +1,22 @@
-import { getPlanBounds, type WallOpening } from '@entities/scene'
+import { collectRoomWallOpenings, getPlanBounds, type WallOpening } from '@entities/scene'
 import { useEditorSelector } from '@features/editor'
 import { SCENE_THEME } from '@shared/config/theme'
 import { shallowEqual } from '@shared/lib'
 import { useMemo } from 'react'
+import { buildPlanItemLayers, PLAN_ITEM_FALLBACK } from '../../lib/geometry/planLayers'
 import { CameraRig } from '../camera/CameraRig'
 import { ClearanceOverlay } from '../environment/ClearanceOverlay'
 import { FurnitureLights } from '../environment/FurnitureLights'
 import { PlanGrid } from '../environment/PlanGrid'
 import { PlanLighting } from '../environment/PlanLighting'
-import { PolygonFloor, RoomDrawingLayer, RoomTransformHandles, RoomVertexHandles, RoomWalls } from '../floor-plan'
+import {
+  PolygonFloor,
+  RoomDimensions,
+  RoomDrawingLayer,
+  RoomTransformHandles,
+  RoomVertexHandles,
+  RoomWalls,
+} from '../floor-plan'
 import { FurnitureObject } from '../furniture/FurnitureObject'
 
 export function FloorPlanScene() {
@@ -19,6 +27,7 @@ export function FloorPlanScene() {
     items,
     openings,
     heatmapVisible,
+    dimensionsVisible,
     viewMode,
     wallDisplayMode,
     roomEditTool,
@@ -33,6 +42,7 @@ export function FloorPlanScene() {
       items: state.items,
       openings: state.openings,
       heatmapVisible: state.heatmapVisible,
+      dimensionsVisible: state.dimensionsVisible,
       viewMode: state.viewMode,
       wallDisplayMode: state.wallDisplayMode,
       roomEditTool: state.roomEditTool,
@@ -65,11 +75,22 @@ export function FloorPlanScene() {
     }
     return grouped
   }, [openings])
+  const wallOpeningsByRoom = useMemo(
+    () => new Map(rooms.map((entry) => [entry.id, collectRoomWallOpenings(entry, rooms, openings)])),
+    [rooms, openings],
+  )
   const maxExtent = Math.max(planBounds.width, planBounds.depth)
+  const planLayers = useMemo(() => buildPlanItemLayers(items), [items])
 
   return (
     <>
-      <CameraRig rooms={rooms} viewMode={viewMode} isDragging={isDragging} interactionLocked={Boolean(roomDrawing)} />
+      <CameraRig
+        rooms={rooms}
+        viewMode={viewMode}
+        isDragging={isDragging}
+        interactionLocked={Boolean(roomDrawing)}
+        dimensionsVisible={dimensionsVisible}
+      />
       {viewMode === 'perspective' && (
         <fog
           attach="fog"
@@ -84,7 +105,8 @@ export function FloorPlanScene() {
           <PolygonFloor room={entry} active={entry.id === activeRoomId} viewMode={viewMode} />
           <RoomWalls
             room={entry}
-            openings={openingsByRoom.get(entry.id) ?? []}
+            ownOpenings={openingsByRoom.get(entry.id) ?? []}
+            wallOpenings={wallOpeningsByRoom.get(entry.id) ?? []}
             viewMode={viewMode}
             wallDisplayMode={wallDisplayMode}
             active={entry.id === activeRoomId}
@@ -93,6 +115,7 @@ export function FloorPlanScene() {
       ))}
 
       {viewMode === 'top' && <PlanGrid bounds={gridBounds} />}
+      {viewMode === 'top' && dimensionsVisible && !roomDrawing && <RoomDimensions room={room} />}
       <ClearanceOverlay rooms={rooms} items={items} visible={heatmapVisible} occluded={viewMode === 'perspective'} />
       {items.map((item) => (
         <FurnitureObject
@@ -100,6 +123,7 @@ export function FloorPlanScene() {
           item={item}
           room={rooms.find((entry) => entry.id === item.roomId) ?? null}
           viewMode={viewMode}
+          layer={planLayers.get(item.id) ?? PLAN_ITEM_FALLBACK}
         />
       ))}
       <RoomTransformHandles

@@ -1,15 +1,23 @@
-import { getOpeningLimits, openingWorldPosition, type RoomDefinition, type WallOpening } from '@entities/scene'
+import {
+  getOpeningLimits,
+  openingWorldPosition,
+  type RoomDefinition,
+  type WallOpening,
+  wallInwardNormal,
+} from '@entities/scene'
 import { useEditorActions, type ViewMode } from '@features/editor'
 import { useViewportInteraction } from '@features/viewport'
 import type { ThreeEvent } from '@react-three/fiber'
 import { SCENE_THEME } from '@shared/config/theme'
 import * as THREE from 'three'
 import { WALL_THICKNESS } from '../../lib/geometry/constants'
+import { PLAN_ORDER } from '../../lib/geometry/planLayers'
 import { planAngleToSceneY } from '../../lib/geometry/sceneCoordinates'
 import { useOpeningDrag } from '../../lib/interactions/useOpeningDrag'
 import { useVerticalDrag } from '../../lib/interactions/useVerticalDrag'
 import { HeightHandle } from '../primitives/HeightHandle'
 import { NativePolyline } from '../primitives/NativePolyline'
+import { PlanStroke } from '../primitives/PlanStroke'
 
 const OPENING_HIT_MATERIAL = new THREE.MeshBasicMaterial({
   colorWrite: false,
@@ -17,9 +25,14 @@ const OPENING_HIT_MATERIAL = new THREE.MeshBasicMaterial({
   depthTest: false,
   side: THREE.DoubleSide,
 })
+const DOOR_LEAF_GEOMETRY = new THREE.PlaneGeometry(1, 1)
+const DOOR_ARC_SEGMENTS = 18
 
 if (import.meta.hot) {
-  import.meta.hot.dispose(() => OPENING_HIT_MATERIAL.dispose())
+  import.meta.hot.dispose(() => {
+    OPENING_HIT_MATERIAL.dispose()
+    DOOR_LEAF_GEOMETRY.dispose()
+  })
 }
 
 interface OpeningVisualProps {
@@ -55,7 +68,13 @@ export function OpeningVisual({ opening, room, selected, invalid, viewMode }: Op
   return (
     <group position={[frame.position.x, 0, frame.position.z]} rotation-y={planAngleToSceneY(frame.angle)}>
       {viewMode === 'top' ? (
-        <TopOpening opening={opening} color={color} selected={selected} onPointerDown={handlePointerDown} />
+        <TopOpening
+          opening={opening}
+          color={color}
+          selected={selected}
+          swing={planSwingDirection(opening, room, frame.angle)}
+          onPointerDown={handlePointerDown}
+        />
       ) : (
         <>
           {opening.kind === 'window' ? (
@@ -102,94 +121,127 @@ function VolumeOpeningHitArea({
   )
 }
 
+function planSwingDirection(opening: WallOpening, room: RoomDefinition, angle: number): number {
+  const inward = wallInwardNormal(room, opening.wallIndex)
+  return inward.x * -Math.sin(angle) + inward.z * Math.cos(angle) >= 0 ? 1 : -1
+}
+
 function TopOpening({
   opening,
   color,
   selected,
+  swing,
   onPointerDown,
 }: Pick<OpeningVisualProps, 'opening' | 'selected'> & {
   color: string
+  swing: number
   onPointerDown(event: ThreeEvent<PointerEvent>): void
 }) {
+  const half = WALL_THICKNESS / 2
+  const edge = opening.width / 2
   const hitDepth = Math.max(0.46, opening.width * 0.42)
+  const strokes = SCENE_THEME.plan.stroke
+  const jambs = [-edge, edge].map((x) => (
+    <PlanStroke
+      key={x}
+      points={[
+        [x, 0.09, -half],
+        [x, 0.09, half],
+      ]}
+      color={color}
+      width={strokes.detail}
+      renderOrder={PLAN_ORDER.openings}
+    />
+  ))
+
   if (opening.kind === 'window') {
     return (
       <>
+        {[-half, half].map((z) => (
+          <PlanStroke
+            key={z}
+            points={[
+              [-edge, 0.09, z],
+              [edge, 0.09, z],
+            ]}
+            color={color}
+            width={strokes.detail}
+            renderOrder={PLAN_ORDER.openings}
+          />
+        ))}
+        {jambs}
         <NativePolyline
           points={[
-            [-opening.width / 2, 0.09, -0.045],
-            [opening.width / 2, 0.09, -0.045],
+            [-edge, 0.092, 0],
+            [edge, 0.092, 0],
           ]}
           color={color}
           depthTest={false}
-          renderOrder={33}
+          renderOrder={PLAN_ORDER.openings + 1}
         />
-        <NativePolyline
-          points={[
-            [-opening.width / 2, 0.09, 0.045],
-            [opening.width / 2, 0.09, 0.045],
-          ]}
-          color={color}
-          depthTest={false}
-          renderOrder={33}
-        />
-        <mesh position={[0, 0.07, 0]} renderOrder={34} material={OPENING_HIT_MATERIAL} onPointerDown={onPointerDown}>
+        <mesh
+          position={[0, 0.07, 0]}
+          renderOrder={PLAN_ORDER.openings + 1}
+          material={OPENING_HIT_MATERIAL}
+          onPointerDown={onPointerDown}
+        >
           <boxGeometry args={[opening.width + 0.35, 0.05, hitDepth]} />
         </mesh>
         {selected && (
-          <NativePolyline
+          <PlanStroke
             points={[
-              [-opening.width / 2 - 0.06, 0.1, -0.11],
-              [opening.width / 2 + 0.06, 0.1, -0.11],
-              [opening.width / 2 + 0.06, 0.1, 0.11],
-              [-opening.width / 2 - 0.06, 0.1, 0.11],
+              [-edge - 0.07, 0.1, -half - 0.06],
+              [edge + 0.07, 0.1, -half - 0.06],
+              [edge + 0.07, 0.1, half + 0.06],
+              [-edge - 0.07, 0.1, half + 0.06],
             ]}
             closed
             color={color}
-            depthTest={false}
-            renderOrder={35}
+            width={strokes.outline}
+            renderOrder={PLAN_ORDER.openings + 2}
           />
         )}
       </>
     )
   }
 
-  const hingeX = -opening.width / 2
-  const angle = Math.PI / 2.8
-  const leafEnd: [number, number, number] = [
-    hingeX + Math.cos(angle) * opening.width,
-    0.1,
-    Math.sin(angle) * opening.width,
-  ]
-  const arc: [number, number, number][] = Array.from({ length: 14 }, (_, index) => {
-    const current = angle * (index / 13)
-    return [hingeX + Math.cos(current) * opening.width, 0.095, Math.sin(current) * opening.width]
+  const sweep = (Math.PI / 2) * swing
+  const arc: [number, number, number][] = Array.from({ length: DOOR_ARC_SEGMENTS + 1 }, (_, index) => {
+    const current = (sweep * index) / DOOR_ARC_SEGMENTS
+    return [-edge + Math.cos(current) * opening.width, 0.095, Math.sin(current) * opening.width]
   })
+
   return (
     <>
-      <mesh position={[0, 0.055, 0]} renderOrder={32}>
-        <boxGeometry args={[opening.width, 0.04, 0.18]} />
-        <meshBasicMaterial color={SCENE_THEME.palette.floorActive} depthTest={false} depthWrite={false} />
-      </mesh>
-      <NativePolyline points={[[hingeX, 0.1, 0], leafEnd]} color={color} depthTest={false} renderOrder={34} />
-      <NativePolyline points={arc} color={color} depthTest={false} renderOrder={34} />
+      {jambs}
       <mesh
-        position={[0, 0.07, opening.width * 0.22]}
-        renderOrder={35}
+        geometry={DOOR_LEAF_GEOMETRY}
+        position={[-edge, 0.098, (swing * opening.width) / 2]}
+        rotation-x={-Math.PI / 2}
+        scale={[0.05, opening.width, 1]}
+        renderOrder={PLAN_ORDER.openings + 1}
+        dispose={null}
+      >
+        <meshBasicMaterial color={color} transparent depthTest={false} depthWrite={false} toneMapped={false} />
+      </mesh>
+      <PlanStroke points={arc} color={color} width={strokes.detail} renderOrder={PLAN_ORDER.openings + 1} />
+      <mesh
+        position={[0, 0.07, swing * opening.width * 0.22]}
+        renderOrder={PLAN_ORDER.openings + 2}
         material={OPENING_HIT_MATERIAL}
         onPointerDown={onPointerDown}
       >
         <boxGeometry args={[opening.width + 0.4, 0.05, Math.max(hitDepth, opening.width * 0.8)]} />
       </mesh>
       {selected && (
-        <NativePolyline
+        <PlanStroke
           points={[
-            [-opening.width / 2 - 0.06, 0.105, -0.12],
-            [opening.width / 2 + 0.06, 0.105, -0.12],
+            [-edge - 0.07, 0.105, -half - 0.06],
+            [edge + 0.07, 0.105, -half - 0.06],
           ]}
           color={color}
-          depthTest={false}
-          renderOrder={36}
+          width={strokes.outline}
+          renderOrder={PLAN_ORDER.openings + 3}
         />
       )}
     </>

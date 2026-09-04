@@ -1,12 +1,14 @@
 import type { ThreeEvent } from '@react-three/fiber'
 import { SCENE_THEME } from '@shared/config/theme'
 import * as THREE from 'three'
+import { PLAN_ORDER } from '../../lib/geometry/planLayers'
 
 const HANDLE_GEOMETRY = new THREE.SphereGeometry(0.5, 16, 12)
 const GRAB_GEOMETRY = new THREE.SphereGeometry(0.5, 8, 6)
 
 const HANDLE_MATERIAL = new THREE.MeshBasicMaterial({
   color: SCENE_THEME.palette.olivePlan,
+  transparent: true,
   depthTest: false,
   toneMapped: false,
 })
@@ -34,8 +36,20 @@ export function FurnitureRotateHandle({ width, depth, height, onPointerDown }: P
 
   return (
     <group position={[x, height, z]} onPointerDown={onPointerDown}>
-      <mesh geometry={HANDLE_GEOMETRY} material={HANDLE_MATERIAL} scale={HANDLE_SIZE} renderOrder={40} dispose={null} />
-      <mesh geometry={GRAB_GEOMETRY} material={GRAB_MATERIAL} scale={GRAB_SIZE} renderOrder={41} dispose={null} />
+      <mesh
+        geometry={HANDLE_GEOMETRY}
+        material={HANDLE_MATERIAL}
+        scale={HANDLE_SIZE}
+        renderOrder={PLAN_ORDER.handles}
+        dispose={null}
+      />
+      <mesh
+        geometry={GRAB_GEOMETRY}
+        material={GRAB_MATERIAL}
+        scale={GRAB_SIZE}
+        renderOrder={PLAN_ORDER.handles + 1}
+        dispose={null}
+      />
     </group>
   )
 }

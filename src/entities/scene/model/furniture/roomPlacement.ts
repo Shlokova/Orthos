@@ -15,11 +15,17 @@ export function itemFitsRoomAt(item: FurnitureItem, room: RoomDefinition, positi
   return isItemInsideRoom(placeInRoom(item, room, position), room)
 }
 
+export function findRoomContainingItem(
+  item: Pick<FurnitureItem, 'position'>,
+  rooms: readonly RoomDefinition[],
+): RoomDefinition | null {
+  return rooms.find((room) => pointInPolygon(item.position, room.vertices, false)) ?? null
+}
+
 function orderedCandidateRooms(item: FurnitureItem, rooms: readonly RoomDefinition[]): RoomDefinition[] {
   const preferred = rooms.find((room) => room.id === item.roomId)
-  const centerRoom = rooms.find((room) => pointInPolygon(item.position, room.vertices, true))
   const result: RoomDefinition[] = []
-  for (const room of [preferred, centerRoom, ...rooms]) {
+  for (const room of [preferred, findRoomContainingItem(item, rooms), ...rooms]) {
     if (room && !result.some((candidate) => candidate.id === room.id)) result.push(room)
   }
   return result

@@ -1,6 +1,6 @@
-import { clamp, distanceBetween, GEOMETRY_EPSILON } from '@shared/lib'
+import { clamp, distanceBetween, GEOMETRY_EPSILON, rotatePoint } from '@shared/lib'
 import type { RoomDefinition, Vec2, WallOpening } from '../types'
-import { polygonCentroid } from './polygon'
+import { polygonCentroid, polygonSignedArea } from './polygon'
 
 export interface WallSegment {
   index: number
@@ -38,6 +38,12 @@ export function getWallSegment(room: RoomDefinition, wallIndex: number): WallSeg
   const first = walls[0]
   if (!first) throw new Error('A room must contain at least one wall')
   return walls[clamp(Math.round(wallIndex), 0, walls.length - 1)] ?? first
+}
+
+export function wallInwardNormal(room: RoomDefinition, wallIndex: number): Vec2 {
+  const wall = getWallSegment(room, wallIndex)
+  const normal = rotatePoint({ x: 0, z: 1 }, wall.angle)
+  return polygonSignedArea(room.vertices) < 0 ? { x: -normal.x, z: -normal.z } : normal
 }
 
 export function openingWorldPosition(

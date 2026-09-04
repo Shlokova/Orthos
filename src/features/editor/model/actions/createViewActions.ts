@@ -21,5 +21,9 @@ export function createViewActions({ store }: EditorActionContext) {
     setHeatmapVisible(heatmapVisible: boolean): void {
       store.patch({ heatmapVisible })
     },
+
+    setDimensionsVisible(dimensionsVisible: boolean): void {
+      store.patch({ dimensionsVisible })
+    },
   }
 }

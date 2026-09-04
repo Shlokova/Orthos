@@ -1,12 +1,12 @@
-import { type FurnitureItem, getCatalogItem } from '@entities/scene'
+import type { FurnitureItem } from '@entities/scene'
 import { SCENE_THEME } from '@shared/config/theme'
-import { useMemo } from 'react'
-import * as THREE from 'three'
-import { NativePolyline } from '../primitives/NativePolyline'
+import { useFurnitureColors } from '@widgets/scene/lib/furniture/FurnitureMaterials'
+import { PLAN_ORDER } from '../../lib/geometry/planLayers'
+import { PlanStroke } from '../primitives/PlanStroke'
 import { BedSymbol } from './plan-symbols/BedroomSymbols'
 import { DecorSymbol } from './plan-symbols/DecorSymbols'
 import { LightingSymbol } from './plan-symbols/LightingSymbols'
-import { footprintOutline, type PlanSymbolProps, Rect } from './plan-symbols/primitives'
+import { footprintOutline, type PlanSymbolProps } from './plan-symbols/primitives'
 import { RugSymbol } from './plan-symbols/RugSymbol'
 import { BenchSymbol, ChairSymbol, SofaSymbol } from './plan-symbols/SeatingSymbols'
 import { StorageSymbol } from './plan-symbols/StorageSymbols'
@@ -18,7 +18,6 @@ const UI_RED = SCENE_THEME.palette.invalidUi
 
 interface Props {
   item: FurnitureItem
-  color: string
   selected: boolean
   invalid: boolean
   baseRenderOrder?: number
@@ -63,52 +62,36 @@ function KindSymbol(props: PlanSymbolProps) {
   }
 }
 
-export function PlanFurnitureSymbol({ item, color, selected, invalid, baseRenderOrder = 20 }: Props) {
-  const definition = getCatalogItem(item.kind)
+export function PlanFurnitureSymbol({ item, selected, invalid, baseRenderOrder = 20 }: Props) {
+  const colors = useFurnitureColors(item)
   const width = item.size.width
   const depth = item.size.depth
+
   const accent = invalid ? UI_RED : selected ? UI_GREEN : SCENE_THEME.palette.outline
-  const softColor = useMemo(
-    () => `#${new THREE.Color(color).lerp(new THREE.Color(SCENE_THEME.palette.softCream), 0.2).getHexString()}`,
-    [color],
-  )
 
   const footprint = footprintOutline(width, depth)
   const symbolProps: PlanSymbolProps = {
     item,
-    color,
+    colors,
     width,
     depth,
     insetW: Math.max(0.04, width * 0.08),
     insetD: Math.max(0.04, depth * 0.09),
-    detailOrder: baseRenderOrder + 1,
-    outlineOrder: baseRenderOrder + 2,
+    fillOrder: baseRenderOrder + 1,
+    detailOrder: baseRenderOrder + 2,
+    outlineOrder: baseRenderOrder + 3,
   }
 
   return (
     <>
-      <Rect
-        width={width}
-        depth={depth}
-        color={softColor}
-        opacity={definition.walkable ? 0.68 : 0.94}
-        renderOrder={baseRenderOrder}
-      />
-      <NativePolyline
-        points={footprint}
-        closed
-        color={accent}
-        depthTest={false}
-        renderOrder={symbolProps.outlineOrder}
-      />
       <KindSymbol {...symbolProps} />
-      {selected && (
-        <NativePolyline
+      {(selected || invalid) && (
+        <PlanStroke
           points={footprint.map(([x, y, z]) => [x * 1.05, y, z * 1.05])}
           closed
           color={accent}
-          depthTest={false}
-          renderOrder={baseRenderOrder + 3}
+          width={SCENE_THEME.plan.stroke.outline}
+          renderOrder={PLAN_ORDER.selection}
         />
       )}
     </>

@@ -39,6 +39,7 @@ export class EditorController {
       wallDisplayMode: 'far',
       roomEditTool: 'transform',
       heatmapVisible: false,
+      dimensionsVisible: true,
       editorNotice: null,
       isTransacting: false,
       roomDrawing: null,

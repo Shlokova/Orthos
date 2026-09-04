@@ -1,4 +1,5 @@
 export * from './PolygonFloor'
+export * from './RoomDimensions'
 export * from './RoomDrawingLayer'
 export * from './RoomTransformHandles'
 export * from './RoomVertexHandles'

@@ -100,7 +100,7 @@ export function FurnitureSection({ item }: Props) {
             ? 'Hangs from the ceiling. Use the arrow handle in 3D to lower it.'
             : anchor === 'surface'
               ? 'Drag it onto a table, shelf or cabinet and it settles on the surface. Sofas and beds do not carry decor.'
-              : 'Drag the object on the plan, hold Space to pan. Press R to turn it 45°, or , and . for 15° steps.'}
+              : 'Drag the object on the plan, hold Space to pan. Drag it past a wall and it moves to the next room once it fits. Press R to turn it 45°, or , and . for 15° steps.'}
       </p>
 
       <Actions className="inspector-actions">

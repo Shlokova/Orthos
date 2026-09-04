@@ -12,6 +12,7 @@ import type { ThreeEvent } from '@react-three/fiber'
 import { SCENE_THEME } from '@shared/config/theme'
 import { snap } from '@shared/lib'
 import { FLOOR_PLANE } from '../../lib/geometry/constants'
+import { PLAN_ORDER } from '../../lib/geometry/planLayers'
 import { useNativePlaneDrag } from '../../lib/interactions/useNativePlaneDrag'
 import { NativePolyline } from '../primitives/NativePolyline'
 
@@ -55,7 +56,7 @@ function RoomTransformHandle({ room, kind, position }: RoomTransformHandleProps)
           })
         }}
       >
-        <mesh renderOrder={39}>
+        <mesh renderOrder={PLAN_ORDER.handles + 1}>
           {kind === 'move' ? (
             <cylinderGeometry args={[0.48, 0.48, 0.06, 24]} />
           ) : (
@@ -63,7 +64,7 @@ function RoomTransformHandle({ room, kind, position }: RoomTransformHandleProps)
           )}
           <meshBasicMaterial transparent opacity={0} depthWrite={false} />
         </mesh>
-        <mesh renderOrder={40}>
+        <mesh renderOrder={PLAN_ORDER.handles + 2}>
           {kind === 'move' ? (
             <cylinderGeometry args={[0.25, 0.25, 0.08, 28]} />
           ) : (
@@ -71,6 +72,7 @@ function RoomTransformHandle({ room, kind, position }: RoomTransformHandleProps)
           )}
           <meshBasicMaterial
             color={kind === 'move' ? SCENE_THEME.palette.terracottaHandle : SCENE_THEME.palette.olivePlanDark}
+            transparent
             depthTest={false}
           />
         </mesh>
@@ -84,7 +86,7 @@ function RoomTransformHandle({ room, kind, position }: RoomTransformHandleProps)
             ]}
             color={SCENE_THEME.palette.handleDetail}
             depthTest={false}
-            renderOrder={41}
+            renderOrder={PLAN_ORDER.handles + 3}
           />
           <NativePolyline
             points={[
@@ -93,7 +95,7 @@ function RoomTransformHandle({ room, kind, position }: RoomTransformHandleProps)
             ]}
             color={SCENE_THEME.palette.handleDetail}
             depthTest={false}
-            renderOrder={41}
+            renderOrder={PLAN_ORDER.handles + 3}
           />
         </>
       )}
@@ -115,7 +117,12 @@ export function RoomTransformHandles({ room, visible }: { room: RoomDefinition; 
 
   return (
     <>
-      <NativePolyline points={frame} color={SCENE_THEME.palette.olivePlanDark} depthTest={false} renderOrder={38} />
+      <NativePolyline
+        points={frame}
+        color={SCENE_THEME.palette.olivePlanDark}
+        depthTest={false}
+        renderOrder={PLAN_ORDER.handles}
+      />
       <RoomTransformHandle room={room} kind="move" position={bounds.center} />
       {ROOM_RESIZE_HANDLES.map((kind) => (
         <RoomTransformHandle key={kind} room={room} kind={kind} position={handles[kind]} />

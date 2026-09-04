@@ -1,6 +1,5 @@
-import { clamp, GEOMETRY_EPSILON, rotatePoint, snap } from '@shared/lib'
-import { polygonSignedArea } from '../room/polygon'
-import { getWallSegment, projectPointToClosestWall } from '../room/walls'
+import { clamp, GEOMETRY_EPSILON, snap } from '@shared/lib'
+import { getWallSegment, projectPointToClosestWall, wallInwardNormal } from '../room/walls'
 import type { FurnitureItem, RoomDefinition, Vec2 } from '../types'
 import { isItemInsideRoom } from './collision'
 
@@ -13,12 +12,6 @@ export interface WallMount {
   position: Vec2
   rotation: number
   distance: number
-}
-
-export function wallInwardNormal(room: RoomDefinition, wallIndex: number): Vec2 {
-  const wall = getWallSegment(room, wallIndex)
-  const normal = rotatePoint({ x: 0, z: 1 }, wall.angle)
-  return polygonSignedArea(room.vertices) < 0 ? { x: -normal.x, z: -normal.z } : normal
 }
 
 export function getItemWallIndex(item: Pick<FurnitureItem, 'position'>, room: RoomDefinition): number {

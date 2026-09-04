@@ -1,9 +1,13 @@
 import type { FurnitureItem, RoomDefinition, SceneState, ValidationIssue, Vec2, WallOpening } from '@entities/scene'
 import type { RoomEditTool, Selection, ViewMode, WallDisplayMode } from './editorTypes'
 
+export type RoomDrawingMagnet = 'none' | 'close' | 'vertex' | 'wall'
+
 export interface RoomDrawingDraft {
   readonly vertices: readonly Vec2[]
   readonly pointer: Vec2 | null
+  readonly magnet: RoomDrawingMagnet
+  readonly blockedBy: string | null
 }
 
 interface EditorNotice {
@@ -19,6 +23,7 @@ export interface EditorModelState {
   wallDisplayMode: WallDisplayMode
   roomEditTool: RoomEditTool
   heatmapVisible: boolean
+  dimensionsVisible: boolean
   editorNotice: EditorNotice | null
   isTransacting: boolean
   roomDrawing: RoomDrawingDraft | null

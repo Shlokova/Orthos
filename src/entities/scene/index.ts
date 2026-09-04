@@ -24,6 +24,7 @@ export {
 } from './model/furniture/limits'
 export {
   constrainItemToRooms,
+  findRoomContainingItem,
   itemFitsRoomAt,
 } from './model/furniture/roomPlacement'
 export {
@@ -62,6 +63,12 @@ export {
   roomArea,
   segmentsIntersect,
 } from './model/room/polygon'
+export type { DrawingMagnet, DrawingMagnetKind } from './model/room/roomDrawingGuards'
+export {
+  findRoomContainingPoint,
+  findRoomCrossedBySegment,
+  findRoomMagnet,
+} from './model/room/roomDrawingGuards'
 export type { RoomResizeHandle } from './model/room/roomEditing'
 export {
   addRoomVertex,
@@ -80,7 +87,10 @@ export {
   createRoomFromVertices,
   normalizeRoom,
 } from './model/room/roomFactory'
-export { findOverlappingRoom } from './model/room/roomOverlap'
+export { findOverlappingRoom, findRoomOverlappingPolygon } from './model/room/roomOverlap'
+export { collectRoomWallOpenings } from './model/room/sharedWalls'
+export type { WallBandQuad } from './model/room/wallBand'
+export { buildWallBandQuads } from './model/room/wallBand'
 export type { WallPiece, WallSpan } from './model/room/wallPieces'
 export {
   buildWallPieces,
@@ -98,6 +108,7 @@ export {
   OPENING_LIMITS,
   openingWorldPosition,
   projectPointToClosestWall,
+  wallInwardNormal,
 } from './model/room/walls'
 export {
   MAX_SCENE_ITEMS,

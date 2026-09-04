@@ -3,6 +3,7 @@ import { SCENE_THEME } from '@shared/config/theme'
 import { GEOMETRY_EPSILON } from '@shared/lib'
 import { useEffect, useMemo } from 'react'
 import * as THREE from 'three'
+import { PLAN_ORDER } from '../../lib/geometry/planLayers'
 
 function createGridGeometry(bounds: Bounds2D, step: number, skipEvery?: number): THREE.BufferGeometry {
   const positions: number[] = []
@@ -41,7 +42,7 @@ function GridLayer({
   const geometry = useMemo(() => createGridGeometry(bounds, step, skipEvery), [bounds, skipEvery, step])
   useEffect(() => () => geometry.dispose(), [geometry])
   return (
-    <lineSegments geometry={geometry} renderOrder={2}>
+    <lineSegments geometry={geometry} renderOrder={PLAN_ORDER.grid}>
       <lineBasicMaterial
         color={color}
         transparent

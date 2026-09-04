@@ -11,8 +11,6 @@ const HIT_MATERIAL = new THREE.MeshBasicMaterial({
   side: THREE.DoubleSide,
 })
 
-const PLAN_HIT_HEIGHT = 0.08
-
 interface PlanHitAreaProps {
   width: number
   depth: number
@@ -24,7 +22,6 @@ export function PlanHitArea({ width, depth, onPointerDown }: PlanHitAreaProps) {
     <mesh
       geometry={HIT_PLANE}
       material={HIT_MATERIAL}
-      position={[0, PLAN_HIT_HEIGHT, 0]}
       rotation-x={-Math.PI / 2}
       scale={[width, depth, 1]}
       renderOrder={-1}
